@@ -11,6 +11,7 @@ require_once BASE_PATH . 'core/Auth.php';
 require_once BASE_PATH . 'core/Router.php';
 require_once BASE_PATH . 'core/Validator.php';
 require_once BASE_PATH . 'core/Model.php';
+require_once BASE_PATH . 'core/Mail.php';
 
 require_once BASE_PATH . 'includes/functions.php';
 

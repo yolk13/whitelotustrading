@@ -17,6 +17,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 "UPDATE inquiries SET status = 'replied', admin_notes = ? WHERE id = ?",
                 [$reply, $id]
             );
+            $inquiry = Inquiry::find($id);
+            if ($inquiry) {
+                Mail::sendInquiryReply($inquiry, $reply);
+            }
             $message = 'Reply sent.';
         }
     }

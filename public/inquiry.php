@@ -50,7 +50,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['quick_subscribe'])) 
             ];
 
             if ($validator->validate($_POST, $rules)) {
-                Inquiry::create([
+                $inquiryData = [
                     'name' => Security::sanitize($_POST['name']),
                     'email' => Security::sanitize($_POST['email']),
                     'phone' => Security::sanitize($_POST['phone'] ?? ''),
@@ -58,7 +58,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['quick_subscribe'])) 
                     'division' => $_POST['division'],
                     'subject' => Security::sanitize($_POST['subject']),
                     'message' => Security::sanitizeRich($_POST['message']),
-                ]);
+                ];
+                Inquiry::create($inquiryData);
+                Mail::sendInquiryNotification($inquiryData);
+                Mail::sendInquiryConfirmation($inquiryData);
                 redirect('/inquiry?sent=1');
             } else {
                 $GLOBALS['errors'] = $validator->errors();

@@ -10,7 +10,12 @@ define('UPLOAD_URL', 'uploads/');
 define('SITE_NAME', 'White Lotus Trading - F.Z.E.');
 define('SITE_URL', 'https://whitelotusfze.com');
 
-define('ADMIN_EMAIL', 'admin@whitelotustrading.com');
+define('ADMIN_EMAIL', 'info@whitelotusfze.com');
+define('SMTP_HOST', '');
+define('SMTP_PORT', 587);
+define('SMTP_USER', '');
+define('SMTP_PASS', '');
+define('SMTP_ENCRYPTION', 'tls');
 
 define('SESSION_LIFETIME', 7200);
 define('LOGIN_MAX_ATTEMPTS', 5);
