@@ -1,6 +1,16 @@
 <?php
 
 $pageTitle = 'White Lotus Trading - F.Z.E. | HVAC & Wellness';
+
+$heroLabel = Database::fetch("SELECT value FROM settings WHERE key = 'hero_label'");
+$heroTitle = Database::fetch("SELECT value FROM settings WHERE key = 'hero_title'");
+$heroSubtitle = Database::fetch("SELECT value FROM settings WHERE key = 'hero_subtitle'");
+$heroBtn1Text = Database::fetch("SELECT value FROM settings WHERE key = 'hero_btn_1_text'");
+$heroBtn1Link = Database::fetch("SELECT value FROM settings WHERE key = 'hero_btn_1_link'");
+$heroBtn2Text = Database::fetch("SELECT value FROM settings WHERE key = 'hero_btn_2_text'");
+$heroBtn2Link = Database::fetch("SELECT value FROM settings WHERE key = 'hero_btn_2_link'");
+$heroImagePlaceholder = Database::fetch("SELECT value FROM settings WHERE key = 'hero_image_placeholder'");
+
 $activeProducts = Product::active();
 $hvacProducts = array_filter($activeProducts, fn($p) => $p['division'] === 'HVAC');
 $wellnessProducts = array_filter($activeProducts, fn($p) => $p['division'] === 'Consumables');
@@ -8,6 +18,35 @@ $homePage = Page::findBySlug('home');
 
 require_once BASE_PATH . 'includes/header.php';
 ?>
+
+<section class="relative hero-split w-full flex flex-col md:flex-row overflow-hidden">
+    <div class="w-full md:w-1/2 flex items-center justify-center bg-pure-white z-10 px-margin-mobile md:px-margin-desktop">
+        <div class="max-w-xl space-y-8 animate-fade-in">
+            <?php if ($heroLabel): ?><span class="font-label-caps text-label-caps text-vibrant-amber uppercase tracking-widest block mb-4"><?= Security::h($heroLabel['value']) ?></span><?php endif; ?>
+            <h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-deep-royal leading-tight"><?= $heroTitle ? $heroTitle['value'] : 'Your Trusted Partner in HVAC & Wellness' ?></h1>
+            <?php if ($heroSubtitle): ?><p class="font-body-lg text-body-lg text-on-surface-variant max-w-md"><?= Security::h($heroSubtitle['value']) ?></p><?php endif; ?>
+            <div class="flex flex-col sm:flex-row gap-4 pt-4">
+                <a href="<?= Security::h($heroBtn1Link['value'] ?? '/products') ?>" class="bg-vibrant-amber text-charcoal-text px-8 py-4 rounded-xl font-headline-sm text-headline-sm hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                    <?= Security::h($heroBtn1Text['value'] ?? 'Explore Industrial') ?>
+                    <span class="material-symbols-outlined">engineering</span>
+                </a>
+                <a href="<?= Security::h($heroBtn2Link['value'] ?? '/products?division=Consumables') ?>" class="border-2 border-deep-royal text-deep-royal px-8 py-4 rounded-xl font-headline-sm text-headline-sm hover:bg-deep-royal hover:text-pure-white transition-all flex items-center justify-center gap-2">
+                    <?= Security::h($heroBtn2Text['value'] ?? 'Wellness Shop') ?>
+                    <span class="material-symbols-outlined">spa</span>
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="w-full md:w-1/2 relative min-h-[400px] md:min-h-full bg-surface-container">
+        <div class="absolute inset-0 flex items-center justify-center">
+            <div class="text-center text-on-surface-variant opacity-30">
+                <span class="material-symbols-outlined text-[120px]">image</span>
+                <p class="font-label-caps"><?= Security::h($heroImagePlaceholder['value'] ?? 'Hero Image') ?></p>
+            </div>
+        </div>
+        <div class="absolute inset-0 bg-deep-royal/10"></div>
+    </div>
+</section>
 
 <?= $homePage ? $homePage['content'] : '' ?>
 

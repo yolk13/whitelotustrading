@@ -31,6 +31,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'slug' => $slug,
                 'content' => Security::sanitizeRich($_POST['content'] ?? ''),
                 'excerpt' => Security::sanitize($_POST['excerpt'] ?? ''),
+                'meta_description' => Security::sanitize($_POST['meta_description'] ?? ''),
                 'category' => Security::sanitize($_POST['category']),
                 'status' => $_POST['status'],
             ];
@@ -249,6 +250,10 @@ require_once BASE_PATH . 'includes/admin-header.php';
                         <textarea class="w-full border border-divider-gray rounded-lg p-3 focus:ring-2 focus:ring-deep-royal focus:outline-none" name="excerpt" id="postInputExcerpt" rows="2" maxlength="300"></textarea>
                     </div>
                     <div>
+                        <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Meta Description (SEO)</label>
+                        <input class="w-full border border-divider-gray rounded-lg p-3 focus:ring-2 focus:ring-deep-royal focus:outline-none" name="meta_description" id="postInputMetaDesc" maxlength="300">
+                    </div>
+                    <div>
                         <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Content</label>
                         <textarea name="content" id="postInputContent" rows="15"></textarea>
                     </div>
@@ -348,6 +353,7 @@ function openEditPost(id, post) {
     document.getElementById('postInputCategory').value = post.category || 'Company';
     document.getElementById('postInputStatus').value = post.status;
     document.getElementById('postInputExcerpt').value = post.excerpt || '';
+    document.getElementById('postInputMetaDesc').value = post.meta_description || '';
     if (blogEditorInitialized) {
         tinymce.get('postInputContent').setContent(post.content || '');
     } else {

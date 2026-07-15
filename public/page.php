@@ -13,6 +13,7 @@ if (!$page || $page['status'] !== 'published') {
 }
 
 $pageTitle = Security::h($page['title']) . ' | White Lotus Trading';
+$metaDescription = Security::h($page['meta_description'] ?? '');
 
 require_once BASE_PATH . 'includes/header.php';
 ?>

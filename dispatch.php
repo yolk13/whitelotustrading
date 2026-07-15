@@ -7,6 +7,7 @@ require_once __DIR__ . '/models/Page.php';
 require_once __DIR__ . '/models/Product.php';
 require_once __DIR__ . '/models/Inquiry.php';
 require_once __DIR__ . '/models/Post.php';
+require_once __DIR__ . '/models/Category.php';
 
 $route = ltrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/') ?: '/';
 

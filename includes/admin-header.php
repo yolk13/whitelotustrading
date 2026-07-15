@@ -119,6 +119,22 @@ tailwind.config = {
             <span class="material-symbols-outlined"<?= navFill('/admin/blog') ?>>article</span>
             <span class="font-label-caps text-label-caps">Blog</span>
         </a>
+        <a class="flex items-center gap-3 px-4 py-3 transition-all <?= navClass('/admin/media') ?>" href="/admin/media">
+            <span class="material-symbols-outlined"<?= navFill('/admin/media') ?>>photo_library</span>
+            <span class="font-label-caps text-label-caps">Media</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 transition-all <?= navClass('/admin/subscribers') ?>" href="/admin/subscribers">
+            <span class="material-symbols-outlined"<?= navFill('/admin/subscribers') ?>>mail_list</span>
+            <span class="font-label-caps text-label-caps">Subscribers</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 transition-all <?= navClass('/admin/categories') ?>" href="/admin/categories">
+            <span class="material-symbols-outlined"<?= navFill('/admin/categories') ?>>category</span>
+            <span class="font-label-caps text-label-caps">Categories</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 transition-all <?= navClass('/admin/settings') ?>" href="/admin/settings">
+            <span class="material-symbols-outlined"<?= navFill('/admin/settings') ?>>settings</span>
+            <span class="font-label-caps text-label-caps">Home Settings</span>
+        </a>
         <form method="POST" action="/admin/logout" class="block">
             <input type="hidden" name="csrf_token" value="<?= Security::generateCsrfToken() ?>">
             <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg group cursor-pointer">

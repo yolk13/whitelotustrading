@@ -68,7 +68,8 @@ class Router
         self::add('POST', '/contact', 'public/contact.php');
         self::add('GET', '/blog', 'public/blog.php');
         self::add('GET', '/blog/{slug}', 'public/blog-detail.php');
-    self::add('GET', '/page/{slug}', 'public/page.php');
+        self::add('GET', '/unsubscribe', 'public/unsubscribe.php');
+        self::add('GET', '/page/{slug}', 'public/page.php');
         self::add('GET', '/admin/login', 'admin/login.php');
         self::add('POST', '/admin/login', 'admin/login.php');
         self::add('POST', '/admin/logout', 'admin/logout.php');
@@ -80,6 +81,10 @@ class Router
             '/admin/pages' => 'admin/pages-handler.php',
             '/admin/blog' => 'admin/posts-handler.php',
             '/admin/upload-image' => 'admin/upload-image.php',
+            '/admin/media' => 'admin/media-handler.php',
+            '/admin/subscribers' => 'admin/subscribers-handler.php',
+            '/admin/categories' => 'admin/categories-handler.php',
+            '/admin/settings' => 'admin/settings-handler.php',
         ];
 
         foreach ($adminRoutes as $pattern => $handler) {

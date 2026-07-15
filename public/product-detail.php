@@ -13,6 +13,9 @@ if (!$product || $product['status'] !== 'active') {
 }
 
 $pageTitle = Security::h($product['name']) . ' | White Lotus Trading';
+$metaDescription = Security::h($product['meta_description'] ?? $product['description'] ?? '');
+$ogTitle = $pageTitle;
+$ogImage = $product['image_url'] ? uploadUrl($product['image_url']) : null;
 $specs = $product['specs'] ? json_decode($product['specs'], true) : null;
 
 require_once BASE_PATH . 'includes/header.php';

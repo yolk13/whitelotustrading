@@ -13,6 +13,9 @@ if (!$post || $post['status'] !== 'published') {
 }
 
 $pageTitle = Security::h($post['title']) . ' | White Lotus Trading';
+$metaDescription = Security::h($post['meta_description'] ?? $post['excerpt'] ?? '');
+$ogTitle = $pageTitle;
+$ogImage = $post['featured_image'] ? uploadUrl($post['featured_image']) : null;
 $recentPosts = Post::recentPosts(5);
 
 require_once BASE_PATH . 'includes/header.php';

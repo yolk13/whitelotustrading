@@ -4,6 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?= Security::h($pageTitle ?? 'White Lotus Trading - F.Z.E. | HVAC & Wellness') ?></title>
+<?php if (isset($metaDescription)): ?>
+<meta name="description" content="<?= Security::h($metaDescription) ?>">
+<meta property="og:description" content="<?= Security::h($metaDescription) ?>">
+<?php endif; ?>
+<?php if (isset($ogTitle)): ?><meta property="og:title" content="<?= Security::h($ogTitle) ?>"><?php endif; ?>
+<?php if (isset($ogImage)): ?><meta property="og:image" content="<?= Security::h($ogImage) ?>"><?php endif; ?>
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="White Lotus Trading - F.Z.E.">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23002366%22/><text x=%2250%22 y=%2268%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2242%22 font-weight=%22800%22 fill=%22%23FFBF00%22>WL</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">

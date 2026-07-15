@@ -36,6 +36,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'division' => $_POST['division'],
                 'category' => Security::sanitize($_POST['category'] ?? ''),
                 'description' => Security::sanitizeRich($_POST['description'] ?? ''),
+                'meta_description' => Security::sanitize($_POST['meta_description'] ?? ''),
                 'specs' => $_POST['specs'] ?? '',
                 'price' => (float)($_POST['price'] ?? 0),
                 'stock' => (int)($_POST['stock'] ?? 0),
@@ -265,6 +266,19 @@ require_once BASE_PATH . 'includes/admin-header.php';
                                 <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Description</label>
                                 <textarea class="w-full border border-divider-gray rounded-lg p-3 focus:ring-2 focus:ring-deep-royal focus:outline-none" name="description" id="inputDescription" rows="4"><?= old('description') ?></textarea>
                             </div>
+                            <div>
+                                <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Category</label>
+                                <select class="w-full border border-divider-gray rounded-lg p-3 focus:ring-2 focus:ring-deep-royal focus:outline-none" name="category" id="inputCategory">
+                                    <option value="">Select category</option>
+                                    <?php foreach (Category::asOptions() as $cat): ?>
+                                        <option value="<?= Security::h($cat['name']) ?>"><?= Security::h($cat['name']) ?></option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                            <div class="col-span-2">
+                                <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Meta Description (SEO)</label>
+                                <input class="w-full border border-divider-gray rounded-lg p-3 focus:ring-2 focus:ring-deep-royal focus:outline-none" name="meta_description" id="inputMetaDesc" maxlength="300">
+                            </div>
                         </div>
                     </section>
                     <section class="space-y-4">
@@ -387,6 +401,8 @@ function openEdit(id, product) {
     document.getElementById('inputPrice').value = product.price || 0;
     document.getElementById('inputStock').value = product.stock || 0;
     document.getElementById('inputDescription').value = product.description || '';
+    document.getElementById('inputCategory').value = product.category || '';
+    document.getElementById('inputMetaDesc').value = product.meta_description || '';
     document.getElementById('inputSpecs').value = product.specs || '';
     specsFromJson(product.specs || '');
     toggleModal('productModal');

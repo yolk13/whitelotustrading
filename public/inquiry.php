@@ -12,17 +12,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['quick_subscribe'])) {
     } else {
         $validator = new Validator();
         if ($validator->validate($_POST, ['email' => ['required', 'email']])) {
-            Inquiry::create([
-                'name' => 'Newsletter Subscriber',
-                'email' => Security::sanitize($_POST['email']),
-                'subject' => 'Newsletter Subscription',
-                'message' => 'Newsletter subscription request from footer.',
-                'division' => 'General',
-            ]);
+            $email = Security::sanitize($_POST['email']);
+            $existing = Database::fetch("SELECT id FROM subscribers WHERE email = ?", [$email]);
+            if ($existing) {
+                if ($existing['status'] !== 'active') {
+                    Database::update('subscribers', ['status' => 'active'], 'id = ?', [$existing['id']]);
+                }
+            } else {
+                Database::insert('subscribers', ['email' => $email]);
+            }
             flash('success', 'Thank you for subscribing!');
         }
     }
-    redirect('/');
+    redirectBack();
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['quick_subscribe'])) {
