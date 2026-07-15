@@ -57,7 +57,7 @@ require_once BASE_PATH . 'includes/admin-header.php';
 
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
     <div class="lg:col-span-6">
-        <div class="glass-card rounded-xl overflow-hidden border border-on-surface/5" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);">
+        <div class="glass-card rounded-xl overflow-x-auto border border-on-surface/5" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-surface-container-low border-b border-on-surface/10">
@@ -97,7 +97,7 @@ require_once BASE_PATH . 'includes/admin-header.php';
 
     <div class="lg:col-span-6">
         <?php if ($editPage): ?>
-        <div class="glass-card rounded-xl border border-on-surface/5 p-8" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);">
+        <div class="rounded-xl border border-on-surface/5 p-6 bg-pure-white shadow-sm">
             <h3 class="font-headline-sm text-headline-sm text-deep-royal mb-6">Edit: <?= Security::h($editPage['title']) ?></h3>
             <form method="POST" class="space-y-6">
                 <input type="hidden" name="csrf_token" value="<?= Security::generateCsrfToken() ?>">
@@ -157,7 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
     if (editor) {
         tinymce.init({
             target: editor,
-            height: 600,
+            min_height: 400,
+            height: 'auto',
             menubar: true,
             plugins: 'link image code table lists advlist',
             toolbar: 'undo redo | blocks | bold italic underline strikethrough | alignleft aligncenter alignright | bullist numlist outdent indent | link image | table | code | removeformat',
