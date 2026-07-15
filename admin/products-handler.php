@@ -269,10 +269,15 @@ require_once BASE_PATH . 'includes/admin-header.php';
                     </section>
                     <section class="space-y-4">
                         <div class="flex justify-between items-center border-b border-divider-gray pb-2">
-                            <h4 class="font-label-caps text-on-surface-variant" style="color: #444650;">Technical Specifications (JSON)</h4>
-                            <span class="text-xs text-on-surface-variant italic">Format: key-value pairs</span>
+                            <h4 class="font-label-caps text-on-surface-variant" style="color: #444650;">Technical Specifications</h4>
+                            <button type="button" class="text-xs text-vibrant-amber font-bold flex items-center gap-1 hover:underline" onclick="addSpecRow()">
+                                <span class="material-symbols-outlined" style="font-size: 16px;">add</span> Add Row
+                            </button>
                         </div>
-                        <textarea class="w-full font-mono text-sm border border-divider-gray rounded-lg p-4 bg-surface-container-low focus:ring-2 focus:ring-deep-royal focus:outline-none" name="specs" id="inputSpecs" rows="6" placeholder='{ "power": "220V", "capacity": "500L", "origin": "UAE" }'><?= old('specs') ?></textarea>
+                        <div id="specsContainer" class="space-y-2">
+                            <div class="text-sm text-on-surface-variant text-center py-4" id="specsEmpty">No specifications added yet.</div>
+                        </div>
+                        <textarea name="specs" id="inputSpecs" class="hidden"><?= old('specs') ?></textarea>
                     </section>
                     <section class="space-y-4">
                         <h4 class="font-label-caps text-on-surface-variant border-b border-divider-gray pb-2" style="color: #444650;">Product Image</h4>
@@ -294,6 +299,66 @@ require_once BASE_PATH . 'includes/admin-header.php';
 </div>
 
 <script>
+function addSpecRow(key, value) {
+    var container = document.getElementById('specsContainer');
+    var empty = document.getElementById('specsEmpty');
+    if (empty) empty.remove();
+    var row = document.createElement('div');
+    row.className = 'specs-row flex gap-2 items-center';
+    row.innerHTML =
+        '<input type="text" placeholder="Key" value="' + (key || '') + '" class="specs-key flex-1 border border-divider-gray rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-deep-royal focus:outline-none bg-pure-white" style="max-width: 180px;">' +
+        '<input type="text" placeholder="Value" value="' + (value || '') + '" class="specs-value flex-1 border border-divider-gray rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-deep-royal focus:outline-none bg-pure-white">' +
+        '<button type="button" class="p-2 hover:bg-error/10 rounded-lg text-on-surface-variant hover:text-error transition-colors" onclick="removeSpecRow(this)"><span class="material-symbols-outlined" style="font-size: 18px;">close</span></button>';
+    container.appendChild(row);
+}
+
+function removeSpecRow(btn) {
+    var row = btn.closest('.specs-row');
+    row.remove();
+    var container = document.getElementById('specsContainer');
+    if (container.querySelectorAll('.specs-row').length === 0) {
+        var empty = document.createElement('div');
+        empty.id = 'specsEmpty';
+        empty.className = 'text-sm text-on-surface-variant text-center py-4';
+        empty.textContent = 'No specifications added yet.';
+        container.appendChild(empty);
+    }
+}
+
+function specsToJson() {
+    var rows = document.querySelectorAll('.specs-row');
+    var obj = {};
+    rows.forEach(function(row) {
+        var key = row.querySelector('.specs-key').value.trim();
+        var val = row.querySelector('.specs-value').value.trim();
+        if (key) obj[key] = val;
+    });
+    return Object.keys(obj).length ? JSON.stringify(obj, null, 2) : '';
+}
+
+function specsFromJson(jsonStr) {
+    var container = document.getElementById('specsContainer');
+    container.querySelectorAll('.specs-row').forEach(function(r) { r.remove(); });
+    var empty = document.getElementById('specsEmpty');
+    if (empty) empty.remove();
+    if (!jsonStr) {
+        var div = document.createElement('div');
+        div.id = 'specsEmpty';
+        div.className = 'text-sm text-on-surface-variant text-center py-4';
+        div.textContent = 'No specifications added yet.';
+        container.appendChild(div);
+        return;
+    }
+    try {
+        var obj = JSON.parse(jsonStr);
+        for (var key in obj) {
+            if (obj.hasOwnProperty(key)) addSpecRow(key, obj[key]);
+        }
+    } catch(e) {
+        addSpecRow('', '');
+    }
+}
+
 function toggleModal(id) {
     const modal = document.getElementById(id);
     const container = document.getElementById('modalContainer');
@@ -323,8 +388,18 @@ function openEdit(id, product) {
     document.getElementById('inputStock').value = product.stock || 0;
     document.getElementById('inputDescription').value = product.description || '';
     document.getElementById('inputSpecs').value = product.specs || '';
+    specsFromJson(product.specs || '');
     toggleModal('productModal');
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    var form = document.getElementById('productForm');
+    if (form) {
+        form.addEventListener('submit', function() {
+            document.getElementById('inputSpecs').value = specsToJson();
+        });
+    }
+});
 
 <?php if ($editProduct): ?>
 document.addEventListener('DOMContentLoaded', function() {
