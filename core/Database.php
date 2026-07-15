@@ -125,6 +125,39 @@ class Database
                 'role' => 'super_admin',
             ]);
         }
+
+        $existingAbout = self::fetch("SELECT id FROM pages WHERE slug = 'about-us'");
+        if (!$existingAbout) {
+            self::insert('pages', [
+                'slug' => 'about-us',
+                'title' => 'About Us',
+                'content' => '<h2>Who We Are</h2><p>White Lotus Trading - F.Z.E is a premier trading company based in Dubai, United Arab Emirates, specializing in industrial HVAC solutions and organic wellness products. We bridge the gap between industrial precision and organic vitality, delivering state-of-the-art climate solutions alongside premium health consumables.</p><h2>Our Mission</h2><p>To provide exceptional products and services that enhance both industrial efficiency and personal well-being, fostering sustainable growth across the MENA region and beyond.</p><h2>Our Values</h2><ul><li><strong>Integrity:</strong> We conduct business with transparency and ethical responsibility.</li><li><strong>Excellence:</strong> We strive for the highest quality in every product and service.</li><li><strong>Innovation:</strong> We embrace cutting-edge technology and sustainable practices.</li><li><strong>Partnership:</strong> We build lasting relationships with clients and suppliers worldwide.</li></ul>',
+                'meta_description' => 'Learn about White Lotus Trading - F.Z.E, a Dubai-based trading company specializing in HVAC solutions and organic wellness products.',
+                'status' => 'published',
+            ]);
+        }
+
+        $existingPrivacy = self::fetch("SELECT id FROM pages WHERE slug = 'privacy-policy'");
+        if (!$existingPrivacy) {
+            self::insert('pages', [
+                'slug' => 'privacy-policy',
+                'title' => 'Privacy Policy',
+                'content' => '<h2>Information We Collect</h2><p>We collect information you provide directly to us, such as your name, email address, phone number, and company details when you submit an inquiry or contact form on our website.</p><h2>How We Use Your Information</h2><p>We use the information we collect to respond to your inquiries, process your requests, improve our services, and communicate with you about our products and offerings.</p><h2>Data Protection</h2><p>We implement appropriate security measures to protect your personal information against unauthorized access, alteration, disclosure, or destruction.</p><h2>Third-Party Disclosure</h2><p>We do not sell, trade, or otherwise transfer your personal information to third parties without your consent, except as required by law.</p><h2>Contact Us</h2><p>If you have any questions about this Privacy Policy, please contact us through our inquiry form or reach out to our team directly.</p>',
+                'meta_description' => 'Privacy Policy for White Lotus Trading - F.Z.E. Learn how we collect, use, and protect your personal information.',
+                'status' => 'published',
+            ]);
+        }
+
+        $existingTerms = self::fetch("SELECT id FROM pages WHERE slug = 'terms-of-service'");
+        if (!$existingTerms) {
+            self::insert('pages', [
+                'slug' => 'terms-of-service',
+                'title' => 'Terms of Service',
+                'content' => '<h2>General Terms</h2><p>By accessing and using the White Lotus Trading - F.Z.E website, you agree to comply with and be bound by the following terms and conditions.</p><h2>Products and Services</h2><p>All products and services are subject to availability. We reserve the right to modify or discontinue any product or service without prior notice. Prices are subject to change without notice.</p><h2>Intellectual Property</h2><p>All content, trademarks, and intellectual property on this website are owned by White Lotus Trading - F.Z.E unless otherwise stated. Unauthorized use is prohibited.</p><h2>Limitation of Liability</h2><p>White Lotus Trading - F.Z.E shall not be liable for any direct, indirect, incidental, or consequential damages arising from the use of our products or services.</p><h2>Governing Law</h2><p>These terms shall be governed by and construed in accordance with the laws of the United Arab Emirates.</p>',
+                'meta_description' => 'Terms of Service for White Lotus Trading - F.Z.E. Understand the conditions governing the use of our website and services.',
+                'status' => 'published',
+            ]);
+        }
     }
 
     public static function query(string $sql, array $params = []): PDOStatement

@@ -66,6 +66,7 @@ class Router
         self::add('POST', '/contact', 'public/contact.php');
         self::add('GET', '/blog', 'public/blog.php');
         self::add('GET', '/blog/{slug}', 'public/blog-detail.php');
+    self::add('GET', '/page/{slug}', 'public/page.php');
         self::add('GET', '/admin/login', 'admin/login.php');
         self::add('POST', '/admin/login', 'admin/login.php');
         self::add('POST', '/admin/logout', 'admin/logout.php');
