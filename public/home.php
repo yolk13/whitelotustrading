@@ -16,8 +16,6 @@ $globalMapImage = Database::fetch("SELECT value FROM settings WHERE key = 'globa
 $activeProducts = Product::active();
 $hvacProducts = array_filter($activeProducts, fn($p) => $p['division'] === 'HVAC');
 $wellnessProducts = array_filter($activeProducts, fn($p) => $p['division'] === 'Consumables');
-$homePage = Page::findBySlug('home');
-
 require_once BASE_PATH . 'includes/header.php';
 ?>
 
@@ -53,8 +51,6 @@ require_once BASE_PATH . 'includes/header.php';
         <div class="absolute inset-0 bg-deep-royal/10"></div>
     </div>
 </section>
-
-<?= $homePage ? $homePage['content'] : '' ?>
 
 <section class="py-section-gap bg-surface-container-low/50">
     <div class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop">
