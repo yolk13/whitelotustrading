@@ -56,12 +56,13 @@ require_once BASE_PATH . 'includes/admin-header.php';
 <?php endif; ?>
 
 <div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter">
-    <div class="lg:col-span-5">
+    <div class="lg:col-span-6">
         <div class="glass-card rounded-xl overflow-hidden border border-on-surface/5" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);">
             <table class="w-full text-left border-collapse">
                 <thead>
                     <tr class="bg-surface-container-low border-b border-on-surface/10">
                         <th class="px-6 py-4 font-label-caps text-on-surface-variant">Page</th>
+                        <th class="px-6 py-4 font-label-caps text-on-surface-variant">Content</th>
                         <th class="px-6 py-4 font-label-caps text-on-surface-variant">Status</th>
                         <th class="px-6 py-4 font-label-caps text-on-surface-variant text-right">Actions</th>
                     </tr>
@@ -72,6 +73,9 @@ require_once BASE_PATH . 'includes/admin-header.php';
                         <td class="px-6 py-4">
                             <p class="font-bold text-deep-royal"><?= Security::h($page['title']) ?></p>
                             <p class="text-xs text-on-surface-variant">/<?= Security::h($page['slug']) ?></p>
+                        </td>
+                        <td class="px-6 py-4">
+                            <p class="text-sm text-on-surface-variant truncate max-w-[200px]" title="<?= Security::h(strip_tags($page['content'] ?? '')) ?>"><?= Security::h(mb_substr(strip_tags($page['content'] ?? ''), 0, 120)) ?><?= mb_strlen(strip_tags($page['content'] ?? '')) > 120 ? '...' : '' ?></p>
                         </td>
                         <td class="px-6 py-4">
                             <span class="flex items-center gap-2">
@@ -91,7 +95,7 @@ require_once BASE_PATH . 'includes/admin-header.php';
         </div>
     </div>
 
-    <div class="lg:col-span-7">
+    <div class="lg:col-span-6">
         <?php if ($editPage): ?>
         <div class="glass-card rounded-xl border border-on-surface/5 p-8" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);">
             <h3 class="font-headline-sm text-headline-sm text-deep-royal mb-6">Edit: <?= Security::h($editPage['title']) ?></h3>

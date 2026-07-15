@@ -10,6 +10,8 @@ $heroBtn1Link = Database::fetch("SELECT value FROM settings WHERE key = 'hero_bt
 $heroBtn2Text = Database::fetch("SELECT value FROM settings WHERE key = 'hero_btn_2_text'");
 $heroBtn2Link = Database::fetch("SELECT value FROM settings WHERE key = 'hero_btn_2_link'");
 $heroImagePlaceholder = Database::fetch("SELECT value FROM settings WHERE key = 'hero_image_placeholder'");
+$heroImage = Database::fetch("SELECT value FROM settings WHERE key = 'hero_image'");
+$globalMapImage = Database::fetch("SELECT value FROM settings WHERE key = 'global_map_image'");
 
 $activeProducts = Product::active();
 $hvacProducts = array_filter($activeProducts, fn($p) => $p['division'] === 'HVAC');
@@ -37,13 +39,17 @@ require_once BASE_PATH . 'includes/header.php';
             </div>
         </div>
     </div>
-    <div class="w-full md:w-1/2 relative min-h-[400px] md:min-h-full bg-surface-container">
-        <div class="absolute inset-0 flex items-center justify-center">
-            <div class="text-center text-on-surface-variant opacity-30">
-                <span class="material-symbols-outlined text-[120px]">image</span>
-                <p class="font-label-caps"><?= Security::h(is_array($heroImagePlaceholder) ? $heroImagePlaceholder['value'] : 'Hero Image') ?></p>
+    <div class="w-full md:w-1/2 relative min-h-[400px] md:min-h-full bg-surface-container overflow-hidden">
+        <?php if (!empty($heroImage) && !empty($heroImage['value'])): ?>
+            <img src="<?= uploadUrl($heroImage['value']) ?>" class="absolute inset-0 w-full h-full object-cover" alt="<?= Security::h(is_array($heroImagePlaceholder) ? $heroImagePlaceholder['value'] : 'Hero Image') ?>">
+        <?php else: ?>
+            <div class="absolute inset-0 flex items-center justify-center">
+                <div class="text-center text-on-surface-variant opacity-30">
+                    <span class="material-symbols-outlined text-[120px]">image</span>
+                    <p class="font-label-caps"><?= Security::h(is_array($heroImagePlaceholder) ? $heroImagePlaceholder['value'] : 'Hero Image') ?></p>
+                </div>
             </div>
-        </div>
+        <?php endif; ?>
         <div class="absolute inset-0 bg-deep-royal/10"></div>
     </div>
 </section>
@@ -126,10 +132,14 @@ require_once BASE_PATH . 'includes/header.php';
             </div>
         </div>
         <div class="w-full lg:w-1/2 h-[400px] rounded-2xl overflow-hidden shadow-sm border border-divider-gray bg-surface-container-low flex items-center justify-center">
-            <div class="text-center text-on-surface-variant opacity-30">
-                <span class="material-symbols-outlined text-[80px]">map</span>
-                <p class="font-label-caps">Global Map</p>
-            </div>
+            <?php if (!empty($globalMapImage) && !empty($globalMapImage['value'])): ?>
+                <img src="<?= uploadUrl($globalMapImage['value']) ?>" class="w-full h-full object-cover" alt="Global Map">
+            <?php else: ?>
+                <div class="text-center text-on-surface-variant opacity-30">
+                    <span class="material-symbols-outlined text-[80px]">map</span>
+                    <p class="font-label-caps">Global Map</p>
+                </div>
+            <?php endif; ?>
         </div>
     </div>
 </section>

@@ -12,7 +12,13 @@
 <?php if (isset($ogImage)): ?><meta property="og:image" content="<?= Security::h($ogImage) ?>"><?php endif; ?>
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="White Lotus Trading - F.Z.E.">
+<?php
+$faviconSetting = Database::fetch("SELECT value FROM settings WHERE key = 'favicon'");
+if (!empty($faviconSetting) && !empty($faviconSetting['value'])): ?>
+<link rel="icon" href="<?= Security::h(uploadUrl($faviconSetting['value'])) ?>">
+<?php else: ?>
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23002366%22/><text x=%2250%22 y=%2268%22 text-anchor=%22middle%22 font-family=%22sans-serif%22 font-size=%2242%22 font-weight=%22800%22 fill=%22%23FFBF00%22>WL</text></svg>">
+<?php endif; ?>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Inter:wght@400;500;700&display=swap" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
@@ -65,7 +71,13 @@ tailwind.config = {
 <header class="sticky top-0 w-full z-50 bg-pure-white/80 backdrop-blur-md border-b border-on-surface/10 shadow-sm">
     <div class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop py-4 flex justify-between items-center">
         <a href="/" class="flex items-center gap-4">
-            <div class="h-10 w-10 rounded-full bg-deep-royal flex items-center justify-center text-pure-white font-bold text-sm">WL</div>
+            <?php
+            $logoSetting = Database::fetch("SELECT value FROM settings WHERE key = 'site_logo'");
+            if (!empty($logoSetting) && !empty($logoSetting['value'])): ?>
+                <img src="<?= Security::h(uploadUrl($logoSetting['value'])) ?>" class="h-10 w-auto object-contain" alt="White Lotus Trading">
+            <?php else: ?>
+                <div class="h-10 w-10 rounded-full bg-deep-royal flex items-center justify-center text-pure-white font-bold text-sm">WL</div>
+            <?php endif; ?>
             <span class="font-headline-md text-headline-md font-extrabold text-deep-royal tracking-tight">White Lotus Trading</span>
         </a>
         <nav class="hidden md:flex items-center space-x-8">

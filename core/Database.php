@@ -211,6 +211,10 @@ class Database
             self::insert('settings', ['key' => 'hero_btn_2_text', 'value' => 'Wellness Shop']);
             self::insert('settings', ['key' => 'hero_btn_2_link', 'value' => '/products?division=Consumables']);
             self::insert('settings', ['key' => 'hero_image_placeholder', 'value' => 'Hero Image']);
+            self::insert('settings', ['key' => 'hero_image', 'value' => '']);
+            self::insert('settings', ['key' => 'global_map_image', 'value' => '']);
+            self::insert('settings', ['key' => 'site_logo', 'value' => '']);
+            self::insert('settings', ['key' => 'favicon', 'value' => '']);
         }
 
         $cat = self::fetch("SELECT id FROM categories WHERE slug = 'hvac-systems'");
