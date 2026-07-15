@@ -47,6 +47,8 @@ foreach ($rows as $row) {
     $settings[$row['key']] = $row['value'];
 }
 
+$csrfToken = Security::generateCsrfToken();
+
 require_once BASE_PATH . 'includes/admin-header.php';
 ?>
 
@@ -60,7 +62,7 @@ require_once BASE_PATH . 'includes/admin-header.php';
             <h3 class="font-headline-sm text-headline-sm text-deep-royal mb-2">Hero Section</h3>
             <p class="text-sm text-on-surface-variant mb-6">Edit the main hero banner on the home page.</p>
             <form method="POST" enctype="multipart/form-data" class="space-y-6">
-                <input type="hidden" name="csrf_token" value="<?= Security::generateCsrfToken() ?>">
+                <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Label</label>
@@ -121,7 +123,7 @@ require_once BASE_PATH . 'includes/admin-header.php';
             <h3 class="font-headline-sm text-headline-sm text-deep-royal mb-2">Global Map Section</h3>
             <p class="text-sm text-on-surface-variant mb-6">Image shown in the "Global Reach, Local Expertise" section.</p>
             <form method="POST" enctype="multipart/form-data" class="space-y-6">
-                <input type="hidden" name="csrf_token" value="<?= Security::generateCsrfToken() ?>">
+                <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                 <div>
                     <label class="block text-xs font-bold text-on-surface-variant uppercase mb-2">Section Image</label>
                     <?php if (!empty($settings['global_map_image'])): ?>
@@ -147,7 +149,7 @@ require_once BASE_PATH . 'includes/admin-header.php';
             <h3 class="font-headline-sm text-headline-sm text-deep-royal mb-2">Site Identity</h3>
             <p class="text-sm text-on-surface-variant mb-6">Manage your site logo and favicon.</p>
             <form method="POST" enctype="multipart/form-data" class="space-y-6">
-                <input type="hidden" name="csrf_token" value="<?= Security::generateCsrfToken() ?>">
+                <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
                 <div>
                     <label class="block text-xs font-bold text-on-surface-variant uppercase mb-2">Site Logo</label>
                     <?php if (!empty($settings['site_logo'])): ?>
@@ -193,11 +195,37 @@ document.addEventListener('DOMContentLoaded', function() {
                 target: el,
                 height: 200,
                 menubar: false,
-                plugins: 'link code lists',
-                toolbar: 'undo redo | bold italic underline | bullist numlist | link | code | removeformat',
+                plugins: 'link image code lists',
+                toolbar: 'undo redo | bold italic underline | bullist numlist | link image | code | removeformat',
+                images_upload_url: '/admin/upload-image',
+                images_upload_handler: function(blobInfo, progress) {
+                    return new Promise(function(resolve, reject) {
+                        var xhr = new XMLHttpRequest();
+                        xhr.withCredentials = false;
+                        xhr.open('POST', '/admin/upload-image');
+                        var formData = new FormData();
+                        formData.append('file', blobInfo.blob(), blobInfo.filename());
+                        xhr.onload = function() {
+                            if (xhr.status !== 200) {
+                                reject('Upload failed: ' + xhr.status);
+                                return;
+                            }
+                            var json = JSON.parse(xhr.responseText);
+                            if (!json || typeof json.location !== 'string') {
+                                reject('Invalid upload response');
+                                return;
+                            }
+                            resolve(json.location);
+                        };
+                        xhr.onerror = function() {
+                            reject('Upload error');
+                        };
+                        xhr.send(formData);
+                    });
+                },
                 content_style: 'body { font-family: system-ui, sans-serif; font-size: 16px; line-height: 1.6; color: #1a1a2e; }',
                 valid_elements: '*[*]',
-                extended_valid_elements: 'span[*]',
+                extended_valid_elements: 'span[*],img[*]',
             });
         }
     });
