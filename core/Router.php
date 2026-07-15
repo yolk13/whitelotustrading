@@ -60,6 +60,7 @@ class Router
         self::add('GET', '/', 'public/home.php');
         self::add('GET', '/products', 'public/products.php');
         self::add('GET', '/product/{slug}', 'public/product-detail.php');
+        self::add('GET', '/sitemap.xml', 'public/sitemap.php');
         self::add('GET', '/inquiry', 'public/inquiry.php');
         self::add('POST', '/inquiry', 'public/inquiry.php');
         self::add('GET', '/contact', 'public/contact.php');
