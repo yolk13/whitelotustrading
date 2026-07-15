@@ -145,7 +145,7 @@ tailwind.config = {
             <span class="font-label-caps text-label-caps">Home Settings</span>
         </a>
         <form method="POST" action="/admin/logout" class="block">
-            <input type="hidden" name="csrf_token" value="<?= Security::generateCsrfToken() ?>">
+            <input type="hidden" name="csrf_token" value="<?= Session::get('csrf_token') ?? Security::generateCsrfToken() ?>">
             <button type="submit" class="w-full flex items-center gap-3 px-4 py-3 text-on-surface-variant hover:bg-surface-container-high transition-all rounded-lg group cursor-pointer">
                 <span class="material-symbols-outlined">logout</span>
                 <span class="font-label-caps text-label-caps">Logout</span>
