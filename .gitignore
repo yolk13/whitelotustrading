@@ -1,0 +1,9 @@
+*.db
+*.sqlite
+*.log
+.env
+.DS_Store
+Thumbs.db
+node_modules/
+uploads/*.php
+uploads/*.phtml
