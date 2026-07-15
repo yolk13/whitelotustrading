@@ -26,12 +26,12 @@ require_once BASE_PATH . 'includes/header.php';
             <h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-deep-royal leading-tight"><?= $heroTitle ? $heroTitle['value'] : 'Your Trusted Partner in HVAC & Wellness' ?></h1>
             <?php if ($heroSubtitle): ?><p class="font-body-lg text-body-lg text-on-surface-variant max-w-md"><?= Security::h($heroSubtitle['value']) ?></p><?php endif; ?>
             <div class="flex flex-col sm:flex-row gap-4 pt-4">
-                <a href="<?= Security::h($heroBtn1Link['value'] ?? '/products') ?>" class="bg-vibrant-amber text-charcoal-text px-8 py-4 rounded-xl font-headline-sm text-headline-sm hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                    <?= Security::h($heroBtn1Text['value'] ?? 'Explore Industrial') ?>
+                <a href="<?= Security::h(is_array($heroBtn1Link) ? $heroBtn1Link['value'] : '/products') ?>" class="bg-vibrant-amber text-charcoal-text px-8 py-4 rounded-xl font-headline-sm text-headline-sm hover:shadow-lg transition-all flex items-center justify-center gap-2">
+                    <?= Security::h(is_array($heroBtn1Text) ? $heroBtn1Text['value'] : 'Explore Industrial') ?>
                     <span class="material-symbols-outlined">engineering</span>
                 </a>
-                <a href="<?= Security::h($heroBtn2Link['value'] ?? '/products?division=Consumables') ?>" class="border-2 border-deep-royal text-deep-royal px-8 py-4 rounded-xl font-headline-sm text-headline-sm hover:bg-deep-royal hover:text-pure-white transition-all flex items-center justify-center gap-2">
-                    <?= Security::h($heroBtn2Text['value'] ?? 'Wellness Shop') ?>
+                <a href="<?= Security::h(is_array($heroBtn2Link) ? $heroBtn2Link['value'] : '/products?division=Consumables') ?>" class="border-2 border-deep-royal text-deep-royal px-8 py-4 rounded-xl font-headline-sm text-headline-sm hover:bg-deep-royal hover:text-pure-white transition-all flex items-center justify-center gap-2">
+                    <?= Security::h(is_array($heroBtn2Text) ? $heroBtn2Text['value'] : 'Wellness Shop') ?>
                     <span class="material-symbols-outlined">spa</span>
                 </a>
             </div>
@@ -41,7 +41,7 @@ require_once BASE_PATH . 'includes/header.php';
         <div class="absolute inset-0 flex items-center justify-center">
             <div class="text-center text-on-surface-variant opacity-30">
                 <span class="material-symbols-outlined text-[120px]">image</span>
-                <p class="font-label-caps"><?= Security::h($heroImagePlaceholder['value'] ?? 'Hero Image') ?></p>
+                <p class="font-label-caps"><?= Security::h(is_array($heroImagePlaceholder) ? $heroImagePlaceholder['value'] : 'Hero Image') ?></p>
             </div>
         </div>
         <div class="absolute inset-0 bg-deep-royal/10"></div>

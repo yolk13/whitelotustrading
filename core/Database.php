@@ -196,7 +196,10 @@ class Database
             ]);
         }
 
-        self::$instance->exec("ALTER TABLE products ADD COLUMN meta_description TEXT DEFAULT ''");
+        try {
+            self::$instance->exec("ALTER TABLE products ADD COLUMN meta_description TEXT DEFAULT ''");
+        } catch (PDOException $e) {
+        }
 
         $settings = self::fetch("SELECT key FROM settings WHERE key = 'hero_label'");
         if (!$settings) {
