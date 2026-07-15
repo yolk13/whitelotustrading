@@ -8,7 +8,7 @@ define('UPLOAD_PATH', BASE_PATH . 'uploads' . DIRECTORY_SEPARATOR);
 define('UPLOAD_URL', 'uploads/');
 
 define('SITE_NAME', 'White Lotus Trading - F.Z.E.');
-define('SITE_URL', 'http://localhost:8080');
+define('SITE_URL', 'https://whitelotusfze.com');
 
 define('ADMIN_EMAIL', 'admin@whitelotustrading.com');
 

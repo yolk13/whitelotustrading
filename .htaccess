@@ -1,5 +1,8 @@
 RewriteEngine On
 
+# Fallback: serve index.php for any URL not matching a real file/directory
+FallbackResource /index.php
+
 RewriteRule ^data/ - [F,L]
 RewriteRule ^core/ - [F,L]
 RewriteRule ^models/ - [F,L]
