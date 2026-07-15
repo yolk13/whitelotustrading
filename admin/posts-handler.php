@@ -250,7 +250,7 @@ require_once BASE_PATH . 'includes/admin-header.php';
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Content</label>
-                        <textarea class="w-full border border-divider-gray rounded-lg p-3 focus:ring-2 focus:ring-deep-royal focus:outline-none font-mono text-sm" name="content" id="postInputContent" rows="12"></textarea>
+                        <textarea name="content" id="postInputContent" rows="15"></textarea>
                     </div>
                     <div>
                         <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Featured Image</label>
@@ -270,21 +270,73 @@ require_once BASE_PATH . 'includes/admin-header.php';
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
 <script>
+var blogEditorInitialized = false;
+
+function initBlogEditor() {
+    if (blogEditorInitialized) return;
+    blogEditorInitialized = true;
+    tinymce.init({
+        selector: '#postInputContent',
+        height: 400,
+        menubar: false,
+        plugins: 'link image code table lists advlist',
+        toolbar: 'undo redo | blocks | bold italic underline | bullist numlist outdent indent | link image | table | code | removeformat',
+        images_upload_url: '/admin/upload-image',
+        images_upload_handler: function(blobInfo, progress) {
+            return new Promise(function(resolve, reject) {
+                var xhr = new XMLHttpRequest();
+                xhr.withCredentials = false;
+                xhr.open('POST', '/admin/upload-image');
+                var formData = new FormData();
+                formData.append('file', blobInfo.blob(), blobInfo.filename());
+                var csrfMeta = document.querySelector('#postForm input[name="csrf_token"]');
+                if (csrfMeta) formData.append('csrf_token', csrfMeta.value);
+                xhr.onload = function() {
+                    if (xhr.status !== 200) {
+                        reject('Upload failed: ' + xhr.status);
+                        return;
+                    }
+                    var json = JSON.parse(xhr.responseText);
+                    if (!json || typeof json.location !== 'string') {
+                        reject('Invalid upload response');
+                        return;
+                    }
+                    resolve(json.location);
+                };
+                xhr.onerror = function() { reject('Upload error'); };
+                xhr.send(formData);
+            });
+        },
+        content_style: 'body { font-family: system-ui, sans-serif; font-size: 16px; line-height: 1.6; color: #1a1a2e; }',
+        valid_elements: '*[*]',
+        extended_valid_elements: 'span[*],div[*],img[*]',
+        setup: function(editor) {
+            editor.on('open', function() {
+                document.querySelectorAll('.tox-tinymce').forEach(function(el) {
+                    el.style.width = '100%';
+                });
+            });
+        }
+    });
+}
+
 function toggleModal(id) {
     const containerId = id === 'postModal' ? 'postModalContainer' : 'modalContainer';
     const modal = document.getElementById(id);
     const container = document.getElementById(containerId);
     if (modal.classList.contains('hidden')) {
         modal.classList.remove('hidden');
-        setTimeout(() => {
+        initBlogEditor();
+        setTimeout(function() {
             container.classList.remove('translate-x-full');
             container.classList.add('translate-x-0');
         }, 10);
     } else {
         container.classList.remove('translate-x-0');
         container.classList.add('translate-x-full');
-        setTimeout(() => { modal.classList.add('hidden'); }, 300);
+        setTimeout(function() { modal.classList.add('hidden'); }, 300);
     }
 }
 
@@ -296,7 +348,11 @@ function openEditPost(id, post) {
     document.getElementById('postInputCategory').value = post.category || 'Company';
     document.getElementById('postInputStatus').value = post.status;
     document.getElementById('postInputExcerpt').value = post.excerpt || '';
-    document.getElementById('postInputContent').value = post.content || '';
+    if (blogEditorInitialized) {
+        tinymce.get('postInputContent').setContent(post.content || '');
+    } else {
+        document.getElementById('postInputContent').value = post.content || '';
+    }
     toggleModal('postModal');
 }
 
