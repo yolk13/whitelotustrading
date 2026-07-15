@@ -47,7 +47,7 @@ class Session
     {
         $row = Database::fetch(
             "SELECT payload FROM sessions WHERE id = ? AND last_activity >= ?",
-            [$sessionId, time()]
+            [$sessionId, time() - SESSION_LIFETIME]
         );
         return $row ? $row['payload'] : '';
     }
