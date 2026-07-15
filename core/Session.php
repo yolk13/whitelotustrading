@@ -1,5 +1,15 @@
 <?php
 
+class AppSessionHandler implements SessionHandlerInterface
+{
+    public function open(string $savePath, string $sessionName): bool { return Session::open($savePath, $sessionName); }
+    public function close(): bool { return Session::close(); }
+    public function read(string $sessionId): string { return Session::read($sessionId); }
+    public function write(string $sessionId, string $data): bool { return Session::write($sessionId, $data); }
+    public function destroy(string $sessionId): bool { return Session::destroy($sessionId); }
+    public function gc(int $maxLifetime): int { return Session::gc($maxLifetime); }
+}
+
 class Session
 {
     private static bool $initialized = false;
@@ -10,14 +20,7 @@ class Session
             return;
         }
 
-        session_set_save_handler(
-            [__CLASS__, 'open'],
-            [__CLASS__, 'close'],
-            [__CLASS__, 'read'],
-            [__CLASS__, 'write'],
-            [__CLASS__, 'destroy'],
-            [__CLASS__, 'gc']
-        );
+        session_set_save_handler(new AppSessionHandler(), true);
 
         session_name('WL_SESSION');
         session_set_cookie_params([

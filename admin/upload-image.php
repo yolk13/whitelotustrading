@@ -1,7 +1,6 @@
 <?php
 
-require_once __DIR__ . '/../config.php';
-Session::start();
+require_once __DIR__ . '/../core/init.php';
 
 if (!Session::get('user_id')) {
     http_response_code(401);
