@@ -4,85 +4,12 @@ $pageTitle = 'White Lotus Trading - F.Z.E. | HVAC & Wellness';
 $activeProducts = Product::active();
 $hvacProducts = array_filter($activeProducts, fn($p) => $p['division'] === 'HVAC');
 $wellnessProducts = array_filter($activeProducts, fn($p) => $p['division'] === 'Consumables');
+$homePage = Page::findBySlug('home');
 
 require_once BASE_PATH . 'includes/header.php';
 ?>
 
-<section class="relative hero-split w-full flex flex-col md:flex-row overflow-hidden">
-    <div class="w-full md:w-1/2 flex items-center justify-center bg-pure-white z-10 px-margin-mobile md:px-margin-desktop">
-        <div class="max-w-xl space-y-8 animate-fade-in">
-            <span class="font-label-caps text-label-caps text-vibrant-amber uppercase tracking-widest block mb-4">Established Excellence</span>
-            <h1 class="font-display-lg text-display-lg-mobile md:text-display-lg text-deep-royal leading-tight">
-                Your Trusted Partner in <span class="text-vibrant-amber">HVAC & Wellness</span>
-            </h1>
-            <p class="font-body-lg text-body-lg text-on-surface-variant max-w-md">
-                Bridging industrial precision with organic vitality. We provide state-of-the-art climate solutions and premium health consumables for a balanced lifestyle.
-            </p>
-            <div class="flex flex-col sm:flex-row gap-4 pt-4">
-                <a href="/products" class="bg-vibrant-amber text-charcoal-text px-8 py-4 rounded-xl font-headline-sm text-headline-sm hover:shadow-lg transition-all flex items-center justify-center gap-2">
-                    Explore Industrial
-                    <span class="material-symbols-outlined">engineering</span>
-                </a>
-                <a href="/products?division=Consumables" class="border-2 border-deep-royal text-deep-royal px-8 py-4 rounded-xl font-headline-sm text-headline-sm hover:bg-deep-royal hover:text-pure-white transition-all flex items-center justify-center gap-2">
-                    Wellness Shop
-                    <span class="material-symbols-outlined">spa</span>
-                </a>
-            </div>
-        </div>
-    </div>
-    <div class="w-full md:w-1/2 relative min-h-[400px] md:min-h-full bg-surface-container">
-        <div class="absolute inset-0 flex items-center justify-center">
-            <div class="text-center text-on-surface-variant opacity-30">
-                <span class="material-symbols-outlined text-[120px]">image</span>
-                <p class="font-label-caps">Hero Image</p>
-            </div>
-        </div>
-        <div class="absolute inset-0 bg-deep-royal/10"></div>
-    </div>
-</section>
-
-<section class="py-section-gap px-margin-mobile md:px-margin-desktop max-w-[1280px] mx-auto">
-    <div class="text-center mb-16">
-        <h2 class="font-headline-md text-headline-md text-deep-royal mb-4">Our Core Divisions</h2>
-        <div class="w-20 h-1 bg-vibrant-amber mx-auto"></div>
-    </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-gutter">
-        <div class="group relative glass-card p-12 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-500 cursor-pointer">
-            <div class="relative z-10 space-y-6">
-                <div class="w-16 h-16 bg-deep-royal/10 rounded-full flex items-center justify-center text-deep-royal group-hover:bg-deep-royal group-hover:text-pure-white transition-colors duration-500">
-                    <span class="material-symbols-outlined text-4xl">ac_unit</span>
-                </div>
-                <h3 class="font-headline-sm text-headline-sm text-deep-royal">Industrial HVAC Solutions</h3>
-                <p class="font-body-md text-body-md text-on-surface-variant">Precision-engineered components, ventilation systems, and climate control technology for large-scale infrastructure and industrial applications.</p>
-                <ul class="space-y-3 font-label-caps text-label-caps text-deep-royal/70">
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">check_circle</span> Precision Air Handling</li>
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">check_circle</span> Energy Efficient Cooling</li>
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">check_circle</span> Technical Maintenance</li>
-                </ul>
-            </div>
-            <div class="absolute -right-12 -bottom-12 opacity-5 group-hover:opacity-10 transition-opacity">
-                <span class="material-symbols-outlined text-[200px]">settings_suggest</span>
-            </div>
-        </div>
-        <div class="group relative glass-card p-12 rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-500 cursor-pointer">
-            <div class="relative z-10 space-y-6">
-                <div class="w-16 h-16 bg-vibrant-amber/10 rounded-full flex items-center justify-center text-vibrant-amber group-hover:bg-vibrant-amber group-hover:text-charcoal-text transition-colors duration-500">
-                    <span class="material-symbols-outlined text-4xl">potted_plant</span>
-                </div>
-                <h3 class="font-headline-sm text-headline-sm text-deep-royal">Organic Wellness Trading</h3>
-                <p class="font-body-md text-body-md text-on-surface-variant">Sourcing the purest superfoods and traditional health supplements, including Himalayan Shilajit, high-grade spices, and natural wellness products.</p>
-                <ul class="space-y-3 font-label-caps text-label-caps text-deep-royal/70">
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">check_circle</span> Ethically Sourced Shilajit</li>
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">check_circle</span> Premium Organic Spices</li>
-                    <li class="flex items-center gap-2"><span class="material-symbols-outlined text-sm">check_circle</span> Direct Global Supply Chain</li>
-                </ul>
-            </div>
-            <div class="absolute -right-12 -bottom-12 opacity-5 group-hover:opacity-10 transition-opacity">
-                <span class="material-symbols-outlined text-[200px]">eco</span>
-            </div>
-        </div>
-    </div>
-</section>
+<?= $homePage ? $homePage['content'] : '' ?>
 
 <section class="py-section-gap bg-surface-container-low/50">
     <div class="max-w-[1280px] mx-auto px-margin-mobile md:px-margin-desktop">

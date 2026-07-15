@@ -77,6 +77,7 @@ class Router
             '/admin/inquiries' => 'admin/inquiries-handler.php',
             '/admin/pages' => 'admin/pages-handler.php',
             '/admin/blog' => 'admin/posts-handler.php',
+            '/admin/upload-image' => 'admin/upload-image.php',
         ];
 
         foreach ($adminRoutes as $pattern => $handler) {

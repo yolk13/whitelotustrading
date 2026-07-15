@@ -127,8 +127,8 @@ require_once BASE_PATH . 'includes/admin-header.php';
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Content (HTML)</label>
-                    <textarea class="w-full border border-divider-gray rounded-lg p-3 focus:ring-2 focus:ring-deep-royal focus:outline-none font-mono text-sm" name="content" rows="15"><?= Security::h($editPage['content']) ?></textarea>
+                    <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Content</label>
+                    <textarea id="page-editor" class="w-full border border-divider-gray rounded-lg p-3 focus:ring-2 focus:ring-deep-royal focus:outline-none" name="content" rows="20"><?= Security::h($editPage['content']) ?></textarea>
                 </div>
                 <div class="flex gap-4">
                     <button type="submit" class="bg-deep-royal text-pure-white px-8 py-3 rounded-lg font-label-caps hover:brightness-110 transition-all shadow-md">Save Changes</button>
@@ -146,4 +146,50 @@ require_once BASE_PATH . 'includes/admin-header.php';
     </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tinymce/6.8.3/tinymce.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const editor = document.getElementById('page-editor');
+    if (editor) {
+        tinymce.init({
+            target: editor,
+            height: 600,
+            menubar: true,
+            plugins: 'link image code table lists advlist',
+            toolbar: 'undo redo | blocks | bold italic underline strikethrough | alignleft aligncenter alignright | bullist numlist outdent indent | link image | table | code | removeformat',
+            images_upload_url: '/admin/upload-image',
+            images_upload_handler: function(blobInfo, progress) {
+                return new Promise(function(resolve, reject) {
+                    var xhr = new XMLHttpRequest();
+                    xhr.withCredentials = false;
+                    xhr.open('POST', '/admin/upload-image');
+                    var formData = new FormData();
+                    formData.append('file', blobInfo.blob(), blobInfo.filename());
+                    var csrfMeta = document.querySelector('input[name="csrf_token"]');
+                    if (csrfMeta) formData.append('csrf_token', csrfMeta.value);
+                    xhr.onload = function() {
+                        if (xhr.status !== 200) {
+                            reject('Upload failed: ' + xhr.status);
+                            return;
+                        }
+                        var json = JSON.parse(xhr.responseText);
+                        if (!json || typeof json.location !== 'string') {
+                            reject('Invalid upload response');
+                            return;
+                        }
+                        resolve(json.location);
+                    };
+                    xhr.onerror = function() {
+                        reject('Upload error');
+                    };
+                    xhr.send(formData);
+                });
+            },
+            content_style: 'body { font-family: system-ui, sans-serif; font-size: 16px; line-height: 1.6; color: #1a1a2e; }',
+            valid_elements: '*[*]',
+            extended_valid_elements: 'span[*],div[*],section[*],img[*]',
+        });
+    }
+});
+</script>
 <?php require_once BASE_PATH . 'includes/admin-footer.php'; ?>
