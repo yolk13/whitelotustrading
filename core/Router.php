@@ -71,11 +71,11 @@ class Router
         self::add('POST', '/admin/logout', 'admin/logout.php');
 
         $adminRoutes = [
-            '/admin' => 'admin/index.php',
-            '/admin/products' => 'admin/products.php',
-            '/admin/inquiries' => 'admin/inquiries.php',
-            '/admin/pages' => 'admin/pages.php',
-            '/admin/blog' => 'admin/posts.php',
+            '/admin' => 'admin/dashboard.php',
+            '/admin/products' => 'admin/products-handler.php',
+            '/admin/inquiries' => 'admin/inquiries-handler.php',
+            '/admin/pages' => 'admin/pages-handler.php',
+            '/admin/blog' => 'admin/posts-handler.php',
         ];
 
         foreach ($adminRoutes as $pattern => $handler) {
