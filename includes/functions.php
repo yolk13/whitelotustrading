@@ -72,10 +72,10 @@ function uploadUrl(?string $filename): string
 
 function excerpt(string $text, int $length = 120): string
 {
-    if (strlen($text) <= $length) {
+    if (mb_strlen($text) <= $length) {
         return $text;
     }
-    return substr($text, 0, $length) . '...';
+    return mb_substr($text, 0, $length) . '...';
 }
 
 function formatDate(string $date, string $format = 'M d, Y'): string

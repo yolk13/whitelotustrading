@@ -60,6 +60,7 @@ require_once BASE_PATH . 'includes/header.php';
             <p class="font-body-md text-body-md text-on-surface-variant mb-6">Alternatively, <a href="/inquiry" class="text-deep-royal underline font-bold">use our inquiry form</a> for product-specific requests.</p>
             <form method="POST" action="/inquiry" class="space-y-6">
                 <input type="hidden" name="csrf_token" value="<?= Security::generateCsrfToken() ?>">
+                <div style="position:absolute;left:-9999px" aria-hidden="true"><input type="text" name="website" tabindex="-1" autocomplete="off"></div>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <label class="block text-xs font-bold text-on-surface-variant uppercase mb-2">Name</label>

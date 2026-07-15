@@ -54,7 +54,7 @@ require_once BASE_PATH . 'includes/admin-header.php';
             <div class="p-3 border-t border-on-surface/5">
                 <p class="text-xs truncate font-medium text-deep-royal" title="<?= Security::h($file['name']) ?>"><?= Security::h($file['name']) ?></p>
                 <p class="text-[10px] text-on-surface-variant mt-1"><?= number_format($file['size'] / 1024, 1) ?> KB</p>
-                <button class="mt-2 w-full text-xs bg-surface-container hover:bg-surface-container-high rounded-lg py-1.5 font-medium text-on-surface transition-colors" onclick="copyUrl('<?= Security::h($file['path']) ?>')">Copy URL</button>
+                <button class="mt-2 w-full text-xs bg-surface-container hover:bg-surface-container-high rounded-lg py-1.5 font-medium text-on-surface transition-colors" onclick="copyUrl('<?= Security::h($file['path']) ?>', this)">Copy URL</button>
             </div>
         </div>
         <?php endforeach; ?>
@@ -62,9 +62,8 @@ require_once BASE_PATH . 'includes/admin-header.php';
 </div>
 
 <script>
-function copyUrl(url) {
+function copyUrl(url, btn) {
     navigator.clipboard.writeText(url).then(function() {
-        var btn = event.target;
         var text = btn.textContent;
         btn.textContent = 'Copied!';
         setTimeout(function() { btn.textContent = text; }, 2000);

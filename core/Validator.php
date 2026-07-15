@@ -136,8 +136,11 @@ class Validator
 
     private function ruleJson(string $field, mixed $value, ?string $param, string $label): void
     {
-        if ($value !== '' && !json_decode($value)) {
-            $this->addError($field, "{$label} must be valid JSON");
+        if ($value !== '') {
+            json_decode($value);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $this->addError($field, "{$label} must be valid JSON");
+            }
         }
     }
 }

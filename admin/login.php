@@ -4,6 +4,9 @@ $error = Session::get('login_error');
 Session::remove('login_error');
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    if (!Security::validateCsrf($_POST['csrf_token'] ?? null)) {
+        $error = 'Invalid security token. Please try again.';
+    } else {
     $username = Security::sanitize($_POST['username'] ?? '');
     $password = $_POST['password'] ?? '';
 
@@ -14,6 +17,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     } else {
         $error = Session::get('login_error');
         Session::remove('login_error');
+    }
     }
 }
 

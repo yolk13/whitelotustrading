@@ -73,7 +73,7 @@ require_once BASE_PATH . 'includes/admin-header.php';
                         <td class="px-6 py-4 text-sm text-on-surface-variant max-w-[200px] truncate"><?= Security::h($cat['description'] ?? '') ?></td>
                         <td class="px-6 py-4 text-right">
                             <div class="flex justify-end gap-1">
-                                <button class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" onclick="openEditCat(<?= $cat['id'] ?>, '<?= Security::h(addslashes($cat['name'])) ?>', '<?= Security::h(addslashes($cat['description'] ?? '')) ?>')">
+                                <button class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" onclick="openEditCat(<?= $cat['id'] ?>, <?= json_encode($cat['name']) ?>, <?= json_encode($cat['description'] ?? '') ?>)">
                                     <span class="material-symbols-outlined">edit</span>
                                 </button>
                                 <form method="POST" class="inline" onsubmit="return confirm('Delete this category?');">

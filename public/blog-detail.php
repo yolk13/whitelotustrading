@@ -49,7 +49,7 @@ require_once BASE_PATH . 'includes/header.php';
             <?php endif; ?>
 
             <div class="font-body-lg text-body-lg text-on-surface leading-loose space-y-4">
-                <?= Security::h($post['content']) ?>
+                <?= $post['content'] ?>
             </div>
         </article>
 

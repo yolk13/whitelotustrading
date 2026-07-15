@@ -5,6 +5,9 @@ $pageTitle = $pageTitle ?? 'Admin Panel';
 $currentRoute = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?? '/';
 function isActiveNav(string $path): bool {
     global $currentRoute;
+    if ($path === '/admin') {
+        return $currentRoute === '/admin' || $currentRoute === '/';
+    }
     return $currentRoute !== null && str_starts_with($currentRoute, $path);
 }
 function navClass(string $path): string {

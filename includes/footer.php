@@ -23,8 +23,8 @@
         <div class="space-y-6 min-w-0">
             <h4 class="font-label-caps text-label-caps uppercase tracking-widest text-vibrant-amber">Legal</h4>
             <ul class="space-y-4">
-                <li><a class="font-body-md text-surface-container-highest hover:text-vibrant-amber underline transition-all" href="/contact">Privacy Policy</a></li>
-                <li><a class="font-body-md text-surface-container-highest hover:text-vibrant-amber underline transition-all" href="/contact">Terms of Service</a></li>
+                <li><a class="font-body-md text-surface-container-highest hover:text-vibrant-amber underline transition-all" href="/page/privacy-policy">Privacy Policy</a></li>
+                <li><a class="font-body-md text-surface-container-highest hover:text-vibrant-amber underline transition-all" href="/page/terms-of-service">Terms of Service</a></li>
                 <li><a class="font-body-md text-surface-container-highest hover:text-vibrant-amber underline transition-all" href="#">ISO Certifications</a></li>
             </ul>
         </div>
