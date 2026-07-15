@@ -17,12 +17,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES['file'])) {
     exit;
 }
 
-if (!Security::validateCsrf($_POST['csrf_token'] ?? null)) {
-    http_response_code(403);
-    echo json_encode(['error' => 'Invalid security token']);
-    exit;
-}
-
 $filename = Security::saveUpload($_FILES['file']);
 
 if (!$filename) {
