@@ -66,6 +66,9 @@ tailwind.config = {
             <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/blog') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/blog">Blog</a>
             <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/inquiry') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/inquiry">Inquiry</a>
             <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/contact') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/contact">Contact</a>
+            <a href="/search" class="text-on-surface-variant hover:text-deep-royal transition-colors">
+                <span class="material-symbols-outlined">search</span>
+            </a>
             <a href="/inquiry" class="bg-deep-royal text-pure-white px-6 py-2 rounded-lg font-label-caps text-label-caps hover:bg-vibrant-amber hover:text-deep-royal transition-all active:scale-95">Get a Quote</a>
         </nav>
         <button class="md:hidden text-deep-royal" onclick="document.getElementById('mobileNav').classList.toggle('hidden')">
