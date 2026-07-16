@@ -87,7 +87,8 @@ class Auth
 
     public static function role(): string
     {
-        return Session::get('role') ?? 'admin';
+        $role = Session::get('role');
+        return $role ?: 'admin';
     }
 
     public static function requireRole(string $minimumRole): void
