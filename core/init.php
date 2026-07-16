@@ -12,9 +12,26 @@ require_once BASE_PATH . 'core/Router.php';
 require_once BASE_PATH . 'core/Validator.php';
 require_once BASE_PATH . 'core/Model.php';
 require_once BASE_PATH . 'core/Mail.php';
-require_once BASE_PATH . 'core/Audit.php';
-require_once BASE_PATH . 'core/Translation.php';
-Translation::init();
+if (file_exists(BASE_PATH . 'core/Audit.php')) {
+    require_once BASE_PATH . 'core/Audit.php';
+} elseif (!class_exists('Audit')) {
+    class Audit {
+        public static function log(string $action, string $entityType, int $entityId, ?string $changes = null): void {}
+        public static function diff(array $before, array $after): string { return ''; }
+    }
+}
+if (file_exists(BASE_PATH . 'core/Translation.php')) {
+    require_once BASE_PATH . 'core/Translation.php';
+    Translation::init();
+} elseif (!class_exists('Translation')) {
+    class Translation {
+        public static function getLocale(): string { return 'en'; }
+        public static function isRtl(): bool { return false; }
+        public static function dir(): string { return 'ltr'; }
+        public static function t(string $key, array $replace = []): string { return $key; }
+        public static function langLink(string $url, string $lang): string { return $url; }
+    }
+}
 
 require_once BASE_PATH . 'includes/functions.php';
 
