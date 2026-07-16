@@ -24,6 +24,6 @@ if (!$filename) {
     exit;
 }
 
-$url = SITE_URL . 'uploads/' . $filename;
+$url = SITE_URL . uploadUrl($filename);
 
 echo json_encode(['location' => $url]);

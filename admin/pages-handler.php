@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$pages = Page::all('title ASC');
+$pages = Page::where("slug != 'home'", [], 'title ASC');
 
 require_once BASE_PATH . 'includes/admin-header.php';
 ?>
