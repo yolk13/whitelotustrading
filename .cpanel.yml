@@ -2,12 +2,4 @@
 deployment:
   tasks:
     - export DEPLOYPATH=/home/whitelot/public_html/
-    - /bin/cp -r assets $DEPLOYPATH
-    - /bin/cp -r admin $DEPLOYPATH
-    - /bin/cp -r core $DEPLOYPATH
-    - /bin/cp -r includes $DEPLOYPATH
-    - /bin/cp -r lang $DEPLOYPATH
-    - /bin/cp -r models $DEPLOYPATH
-    - /bin/cp -r public $DEPLOYPATH
-    - /bin/cp .htaccess $DEPLOYPATH
-    - /bin/cp *.php $DEPLOYPATH
+    - /usr/bin/rsync -a --exclude='.git' --exclude='.gitignore' --exclude='.cpanel.yml' . $DEPLOYPATH
