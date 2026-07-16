@@ -29,11 +29,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if (!empty($_FILES[$key]) && $_FILES[$key]['error'] === UPLOAD_ERR_OK) {
                 $filename = Security::saveUpload($_FILES[$key]);
                 if ($filename) {
-                    Database::update('settings', ['value' => $filename, 'updated_at' => date('Y-m-d H:i:s')], 'key = ?', [$key]);
+                    $existing = Database::fetch("SELECT key FROM settings WHERE key = ?", [$key]);
+                    if ($existing) {
+                        Database::update('settings', ['value' => $filename, 'updated_at' => date('Y-m-d H:i:s')], 'key = ?', [$key]);
+                    } else {
+                        Database::insert('settings', ['key' => $key, 'value' => $filename]);
+                    }
                 }
             }
             if (isset($_POST[$key . '_remove']) && $_POST[$key . '_remove'] === '1') {
-                Database::update('settings', ['value' => '', 'updated_at' => date('Y-m-d H:i:s')], 'key = ?', [$key]);
+                $existing = Database::fetch("SELECT key FROM settings WHERE key = ?", [$key]);
+                if ($existing) {
+                    Database::update('settings', ['value' => '', 'updated_at' => date('Y-m-d H:i:s')], 'key = ?', [$key]);
+                } else {
+                    Database::insert('settings', ['key' => $key, 'value' => '']);
+                }
             }
         }
 
