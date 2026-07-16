@@ -197,6 +197,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 menubar: false,
                 plugins: 'link image code lists',
                 toolbar: 'undo redo | bold italic underline | bullist numlist | link image | code | removeformat',
+                forced_root_block: false,
                 images_upload_url: '/admin/upload-image',
                 images_upload_handler: function(blobInfo, progress) {
                     return new Promise(function(resolve, reject) {

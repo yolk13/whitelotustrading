@@ -21,9 +21,7 @@ class Security
         if (empty($token) || empty($stored)) {
             return false;
         }
-        $valid = hash_equals($stored, $token);
-        Session::remove('csrf_token');
-        return $valid;
+        return hash_equals($stored, $token);
     }
 
     public static function h(mixed $value): string
