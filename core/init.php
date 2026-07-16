@@ -12,6 +12,9 @@ require_once BASE_PATH . 'core/Router.php';
 require_once BASE_PATH . 'core/Validator.php';
 require_once BASE_PATH . 'core/Model.php';
 require_once BASE_PATH . 'core/Mail.php';
+require_once BASE_PATH . 'core/Audit.php';
+require_once BASE_PATH . 'core/Translation.php';
+Translation::init();
 
 require_once BASE_PATH . 'includes/functions.php';
 

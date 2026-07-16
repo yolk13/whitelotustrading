@@ -2,7 +2,8 @@
 
 class Post extends Model
 {
-    protected static string $table = 'posts';
+    public static string $table = 'posts';
+    protected static bool $softDelete = true;
 
     public static function findBySlug(string $slug): ?array
     {
@@ -17,7 +18,7 @@ class Post extends Model
     public static function recentPosts(int $limit = 3): array
     {
         return Database::fetchAll(
-            "SELECT * FROM posts WHERE status = 'published' ORDER BY published_at DESC LIMIT ?",
+            "SELECT * FROM posts WHERE status = 'published' AND deleted_at IS NULL ORDER BY published_at DESC LIMIT ?",
             [$limit]
         );
     }
@@ -30,7 +31,7 @@ class Post extends Model
     public static function categories(): array
     {
         return Database::fetchAll(
-            "SELECT DISTINCT category FROM posts WHERE status = 'published' AND category IS NOT NULL ORDER BY category"
+            "SELECT DISTINCT category FROM posts WHERE status = 'published' AND deleted_at IS NULL AND category IS NOT NULL ORDER BY category"
         );
     }
 

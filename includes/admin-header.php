@@ -140,9 +140,25 @@ tailwind.config = {
             <span class="material-symbols-outlined"<?= navFill('/admin/categories') ?>>category</span>
             <span class="font-label-caps text-label-caps">Categories</span>
         </a>
+        <a class="flex items-center gap-3 px-4 py-3 transition-all <?= navClass('/admin/specs') ?>" href="/admin/specs">
+            <span class="material-symbols-outlined"<?= navFill('/admin/specs') ?>>tune</span>
+            <span class="font-label-caps text-label-caps">Spec Definitions</span>
+        </a>
         <a class="flex items-center gap-3 px-4 py-3 transition-all <?= navClass('/admin/settings') ?>" href="/admin/settings">
             <span class="material-symbols-outlined"<?= navFill('/admin/settings') ?>>settings</span>
             <span class="font-label-caps text-label-caps">Home Settings</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 transition-all <?= navClass('/admin/audit') ?>" href="/admin/audit">
+            <span class="material-symbols-outlined"<?= navFill('/admin/audit') ?>>history</span>
+            <span class="font-label-caps text-label-caps">Audit Log</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 transition-all <?= navClass('/admin/trash') ?>" href="/admin/trash">
+            <span class="material-symbols-outlined"<?= navFill('/admin/trash') ?>>delete_sweep</span>
+            <span class="font-label-caps text-label-caps">Trash</span>
+        </a>
+        <a class="flex items-center gap-3 px-4 py-3 transition-all <?= navClass('/admin/users') ?>" href="/admin/users">
+            <span class="material-symbols-outlined"<?= navFill('/admin/users') ?>>group</span>
+            <span class="font-label-caps text-label-caps">Users</span>
         </a>
         <form method="POST" action="/admin/logout" class="block">
             <input type="hidden" name="csrf_token" value="<?= Session::get('csrf_token') ?? Security::generateCsrfToken() ?>">

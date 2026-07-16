@@ -85,6 +85,10 @@ class Router
             '/admin/subscribers' => 'admin/subscribers-handler.php',
             '/admin/categories' => 'admin/categories-handler.php',
             '/admin/settings' => 'admin/settings-handler.php',
+            '/admin/audit' => 'admin/audit-handler.php',
+            '/admin/trash' => 'admin/trash-handler.php',
+            '/admin/specs' => 'admin/specs-handler.php',
+            '/admin/users' => 'admin/users-handler.php',
         ];
 
         foreach ($adminRoutes as $pattern => $handler) {

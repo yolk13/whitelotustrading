@@ -2,7 +2,8 @@
 
 class Page extends Model
 {
-    protected static string $table = 'pages';
+    public static string $table = 'pages';
+    protected static bool $softDelete = true;
 
     public static function findBySlug(string $slug): ?array
     {

@@ -5,7 +5,36 @@ $division = Security::sanitize($_GET['division'] ?? '');
 $search = Security::sanitize($_GET['search'] ?? '');
 $page = max(1, (int)($_GET['page'] ?? 1));
 
-$products = Product::paginateActive($page, 12, $division, $search);
+$specDefsList = SpecDefinition::all();
+$specFilters = [];
+foreach ($specDefsList as $def) {
+    $val = Security::sanitize($_GET['spec_' . $def['id']] ?? '');
+    if ($val !== '') {
+        $specFilters[$def['id']] = $val;
+    }
+}
+
+if (!empty($specFilters)) {
+    $conditions = [];
+    $params = [];
+    foreach ($specFilters as $defId => $val) {
+        $conditions[] = "(ps.spec_definition_id = ? AND ps.value = ?)";
+        $params[] = $defId;
+        $params[] = $val;
+    }
+    $having = implode(' OR ', $conditions);
+    $filteredIds = Database::fetchAll(
+        "SELECT ps.product_id FROM product_specs ps WHERE {$having} GROUP BY ps.product_id HAVING COUNT(DISTINCT ps.spec_definition_id) = ?",
+        array_merge($params, [count($specFilters)])
+    );
+    $filteredIds = array_column($filteredIds, 'product_id');
+    if (empty($filteredIds)) {
+        $filteredIds = [0];
+    }
+    $products = Product::paginateActive($page, 12, $division, $search, $filteredIds);
+} else {
+    $products = Product::paginateActive($page, 12, $division, $search);
+}
 
 require_once BASE_PATH . 'includes/header.php';
 ?>
@@ -28,7 +57,21 @@ require_once BASE_PATH . 'includes/header.php';
                 <option value="Consumables" <?= selected($division, 'Consumables') ?>>Consumables</option>
             </select>
         </div>
-        <?php if ($search || $division): ?>
+        <?php if (!empty($specDefsList)): ?>
+            <?php foreach ($specDefsList as $def): ?>
+                <?php if ($def['data_type'] === 'enum' && $def['options']): ?>
+                <div class="flex items-center gap-2 bg-pure-white px-4 py-2 border border-divider-gray rounded-lg">
+                    <select class="bg-transparent border-none focus:ring-0 text-sm font-medium text-deep-royal cursor-pointer" name="spec_<?= $def['id'] ?>" onchange="this.form.submit()">
+                        <option value=""><?= Security::h($def['label']) ?></option>
+                        <?php foreach (explode(',', $def['options']) as $opt): $opt = trim($opt); ?>
+                            <option value="<?= Security::h($opt) ?>" <?= selected($_GET['spec_' . $def['id']] ?? '', $opt) ?>><?= Security::h($opt) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+                <?php endif; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
+        <?php if ($search || $division || !empty($specFilters)): ?>
             <a href="/products" class="text-sm text-on-surface-variant hover:text-deep-royal underline transition-all">Clear filters</a>
         <?php endif; ?>
     </form>

@@ -9,11 +9,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['quick_subscribe'])) {
         $GLOBALS['errors']['csrf'] = 'Invalid security token. Please try again.';
     } elseif (!empty($_POST['website'])) {
         $GLOBALS['errors']['spam'] = 'Spam detected.';
+    } elseif (!Security::checkRateLimit('subscribe', SUBSCRIBE_RATE_LIMIT_MAX, SUBSCRIBE_RATE_LIMIT_WINDOW_MINUTES)) {
+        http_response_code(429);
+        $GLOBALS['errors']['rate'] = 'Too many subscribe attempts. Please try again later.';
     } else {
         $validator = new Validator();
         if ($validator->validate($_POST, ['email' => ['required', 'email']])) {
+            Security::hitRateLimit('subscribe', SUBSCRIBE_RATE_LIMIT_WINDOW_MINUTES);
             $email = Security::sanitize($_POST['email']);
-            $existing = Database::fetch("SELECT id FROM subscribers WHERE email = ?", [$email]);
+            $existing = Database::fetch("SELECT id, status FROM subscribers WHERE email = ?", [$email]);
             if ($existing) {
                 if ($existing['status'] !== 'active') {
                     Database::update('subscribers', ['status' => 'active'], 'id = ?', [$existing['id']]);
@@ -32,15 +36,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['quick_subscribe'])) 
         $GLOBALS['errors']['csrf'] = 'Invalid security token. Please try again.';
     } elseif (!empty($_POST['website'])) {
         $GLOBALS['errors']['spam'] = 'Spam detected.';
+    } elseif (!Security::checkRateLimit('inquiry', INQUIRY_RATE_LIMIT_MAX, INQUIRY_RATE_LIMIT_WINDOW_MINUTES)) {
+        http_response_code(429);
+        $GLOBALS['errors']['rate'] = 'You\'ve reached the submission limit. Please try again in a few minutes.';
     } else {
-        $inquiryCount = (int)Session::get('inquiry_count', 0);
-        $inquiryTime = (int)Session::get('inquiry_time', 0);
-        if ($inquiryCount >= 3 && time() - $inquiryTime < 1800) {
-            $GLOBALS['errors']['rate'] = 'Too many inquiries. Please try again later.';
-        } else {
-            Session::set('inquiry_count', $inquiryCount + 1);
-            Session::set('inquiry_time', time());
-            $validator = new Validator();
+        Security::hitRateLimit('inquiry', INQUIRY_RATE_LIMIT_WINDOW_MINUTES);
+        $validator = new Validator();
             $rules = [
                 'name' => ['required', 'min:2', 'max:100'],
                 'email' => ['required', 'email'],
@@ -61,6 +62,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['quick_subscribe'])) 
                     'subject' => Security::sanitize($_POST['subject']),
                     'message' => Security::sanitizeRich($_POST['message']),
                 ];
+                $email = Security::sanitize($_POST['email']);
+                $existingCustomer = Database::fetch("SELECT id FROM customers WHERE email = ?", [$email]);
+                if ($existingCustomer) {
+                    Database::update('customers', [
+                        'name' => Security::sanitize($_POST['name']),
+                        'phone' => Security::sanitize($_POST['phone'] ?? ''),
+                        'company' => Security::sanitize($_POST['company'] ?? ''),
+                        'updated_at' => date('Y-m-d H:i:s'),
+                    ], 'id = ?', [$existingCustomer['id']]);
+                    $inquiryData['customer_id'] = $existingCustomer['id'];
+                } else {
+                    $inquiryData['customer_id'] = Database::insert('customers', [
+                        'email' => $email,
+                        'name' => Security::sanitize($_POST['name']),
+                        'phone' => Security::sanitize($_POST['phone'] ?? ''),
+                        'company' => Security::sanitize($_POST['company'] ?? ''),
+                    ]);
+                }
                 Inquiry::create($inquiryData);
                 Mail::sendInquiryNotification($inquiryData);
                 Mail::sendInquiryConfirmation($inquiryData);
@@ -70,7 +89,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['quick_subscribe'])) 
             }
         }
     }
-}
 
 require_once BASE_PATH . 'includes/header.php';
 ?>

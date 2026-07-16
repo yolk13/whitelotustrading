@@ -1,5 +1,6 @@
 <?php
 
+Auth::requireRole('admin');
 $pageTitle = 'Subscribers Management';
 $message = '';
 

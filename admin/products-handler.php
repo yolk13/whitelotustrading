@@ -53,11 +53,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($action === 'create') {
                 $id = Product::create($data);
+                $productId = $id;
+                Audit::log('create', 'product', $id, json_encode(['data' => $data]));
                 $message = 'Product created successfully.';
                 $_POST = [];
             } else {
-                Product::update((int)$_POST['id'], $data);
+                $productId = (int)$_POST['id'];
+                $old = Product::find($productId);
+                Product::update($productId, $data);
+                Audit::log('update', 'product', $productId, Audit::diff($old ?? [], $data));
                 $message = 'Product updated successfully.';
+            }
+
+            if (!empty($productId)) {
+                $specValues = $_POST['spec'] ?? [];
+                foreach ($specValues as $defId => $value) {
+                    $defId = (int)$defId;
+                    if ($defId && $value !== '') {
+                        Product::saveSpec($productId, $defId, Security::sanitize($value));
+                    } else {
+                        Product::deleteSpec($productId, $defId);
+                    }
+                }
+
+                $variantLabels = $_POST['variant_label'] ?? [];
+                $variantSkus = $_POST['variant_sku'] ?? [];
+                $variantPrices = $_POST['variant_price'] ?? [];
+                $variantStocks = $_POST['variant_stock'] ?? [];
+                $variantIds = $_POST['variant_id'] ?? [];
+                foreach ($variantLabels as $i => $label) {
+                    $label = trim($label);
+                    if (!$label) continue;
+                    Product::saveVariant($productId, [
+                        'id' => (int)($variantIds[$i] ?? 0),
+                        'variant_label' => $label,
+                        'sku_suffix' => Security::sanitize($variantSkus[$i] ?? ''),
+                        'price' => $variantPrices[$i] ?? '',
+                        'stock' => (int)($variantStocks[$i] ?? 0),
+                    ]);
+                }
+                $variantDeletes = $_POST['variant_delete'] ?? [];
+                foreach ($variantDeletes as $vid) {
+                    Product::deleteVariant((int)$vid);
+                }
             }
         } else {
             $GLOBALS['errors'] = $validator->errors();
@@ -67,8 +105,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete') {
         $id = (int)($_POST['id'] ?? 0);
         if ($id) {
+            $old = Product::find($id) ?: Product::findTrashed($id);
             Product::delete($id);
-            $message = 'Product deleted.';
+            Audit::log('delete', 'product', $id, $old ? json_encode(['name' => $old['name'] ?? '', 'sku' => $old['sku'] ?? '']) : null);
+            $message = 'Product trashed.';
+        }
+    }
+
+    if ($action === 'bulk') {
+        $ids = $_POST['ids'] ?? [];
+        $bulkAction = $_POST['bulk_action'] ?? '';
+        $count = 0;
+        foreach ($ids as $pid) {
+            $pid = (int)$pid;
+            if (!$pid) continue;
+            match ($bulkAction) {
+                'delete' => Product::delete($pid),
+                'activate' => Product::update($pid, ['status' => 'active']),
+                'draft' => Product::update($pid, ['status' => 'draft']),
+                'hvac' => Product::update($pid, ['division' => 'HVAC']),
+                'consumables' => Product::update($pid, ['division' => 'Consumables']),
+                default => null,
+            };
+            $count++;
+        }
+        if ($count) {
+            Audit::log('bulk_' . $bulkAction, 'product', 0, json_encode(['count' => $count, 'ids' => $ids]));
+            $message = $count . ' product' . ($count !== 1 ? 's' : '') . ' updated.';
         }
     }
     }
@@ -80,9 +143,16 @@ $status = $_GET['status'] ?? '';
 $search = Security::sanitize($_GET['search'] ?? '');
 
 $products = Product::paginateAdmin($page, 10, $division, $status, $search);
+$specDefs = SpecDefinition::all();
 $editProduct = null;
+$editSpecs = [];
+$editVariants = [];
 if (isset($_GET['edit'])) {
     $editProduct = Product::find((int)$_GET['edit']);
+    if ($editProduct) {
+        $editSpecs = Product::getSpecs($editProduct['id']);
+        $editVariants = Product::getVariants($editProduct['id']);
+    }
 }
 
 require_once BASE_PATH . 'includes/admin-header.php';
@@ -136,9 +206,28 @@ require_once BASE_PATH . 'includes/admin-header.php';
 </form>
 
 <div class="glass-card rounded-xl overflow-hidden border border-on-surface/5" style="background: rgba(255,255,255,0.8); backdrop-filter: blur(20px);">
+    <form method="POST" id="bulkForm" class="flex items-center gap-3 px-6 py-3 border-b border-on-surface/10 bg-surface-container-low">
+        <input type="hidden" name="csrf_token" value="<?= Security::generateCsrfToken() ?>">
+        <input type="hidden" name="action" value="bulk">
+        <input type="hidden" name="bulk_action" id="bulkAction" value="">
+        <span class="text-xs font-bold text-on-surface-variant uppercase">Bulk:</span>
+        <select id="bulkSelect" class="text-sm border border-divider-gray rounded-lg px-3 py-1.5 focus:ring-2 focus:ring-deep-royal focus:outline-none bg-pure-white">
+            <option value="">Select action...</option>
+            <option value="activate">Set Active</option>
+            <option value="draft">Set Draft</option>
+            <option value="hvac">Move to HVAC</option>
+            <option value="consumables">Move to Consumables</option>
+            <option value="delete">Move to Trash</option>
+        </select>
+        <button type="button" onclick="doBulkAction()" class="px-4 py-1.5 rounded-lg bg-deep-royal text-pure-white text-xs font-bold hover:brightness-110 transition-all">Apply</button>
+        <span id="bulkCount" class="text-xs text-on-surface-variant ml-auto">0 selected</span>
+    </form>
     <table class="w-full text-left border-collapse">
         <thead>
             <tr class="bg-surface-container-low border-b border-on-surface/10" style="background-color: #f6f3f2;">
+                <th class="px-4 py-4 w-10">
+                    <input type="checkbox" id="selectAll" class="rounded border-divider-gray text-deep-royal focus:ring-deep-royal cursor-pointer">
+                </th>
                 <th class="px-6 py-4 font-label-caps text-on-surface-variant">Product</th>
                 <th class="px-6 py-4 font-label-caps text-on-surface-variant">Division</th>
                 <th class="px-6 py-4 font-label-caps text-on-surface-variant">Inventory</th>
@@ -148,10 +237,13 @@ require_once BASE_PATH . 'includes/admin-header.php';
         </thead>
         <tbody class="divide-y divide-on-surface/5">
             <?php if (empty($products['items'])): ?>
-                <tr><td colspan="5" class="px-6 py-12 text-center text-on-surface-variant">No products found.</td></tr>
+                <tr><td colspan="6" class="px-6 py-12 text-center text-on-surface-variant">No products found.</td></tr>
             <?php endif; ?>
             <?php foreach ($products['items'] as $product): ?>
             <tr class="hover:bg-surface-bright transition-colors group" style="background: transparent;">
+                <td class="px-4 py-4">
+                    <input type="checkbox" name="ids[]" value="<?= $product['id'] ?>" class="product-checkbox rounded border-divider-gray text-deep-royal focus:ring-deep-royal cursor-pointer">
+                </td>
                 <td class="px-6 py-4">
                     <div class="flex items-center gap-4">
                         <div class="w-12 h-12 rounded bg-surface-container flex items-center justify-center overflow-hidden" style="background: #f0eded;">
@@ -179,7 +271,7 @@ require_once BASE_PATH . 'includes/admin-header.php';
                 </td>
                 <td class="px-6 py-4 text-right">
                     <div class="flex justify-end gap-2">
-                        <a href="?edit=<?= $product['id'] ?>" class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" onclick="event.preventDefault(); openEdit(<?= $product['id'] ?>, <?= Security::h(json_encode($product)) ?>)">
+                        <a href="?edit=<?= $product['id'] ?>" class="p-2 hover:bg-surface-container rounded-lg text-on-surface-variant transition-colors" onclick="event.preventDefault(); openEdit(<?= $product['id'] ?>, <?= Security::h(json_encode($product)) ?>, <?= Security::h(json_encode(Product::getSpecs($product['id']))) ?>, <?= Security::h(json_encode(Product::getVariants($product['id']))) ?>)">
                             <span class="material-symbols-outlined">edit</span>
                         </a>
                         <form method="POST" class="inline" onsubmit="return confirm('Delete this product?');">
@@ -293,6 +385,42 @@ require_once BASE_PATH . 'includes/admin-header.php';
                         </div>
                         <textarea name="specs" id="inputSpecs" class="hidden"><?= old('specs') ?></textarea>
                     </section>
+                    <?php if (!empty($specDefs)): ?>
+                    <section class="space-y-4">
+                        <h4 class="font-label-caps text-on-surface-variant border-b border-divider-gray pb-2" style="color: #444650;">Structured Specs</h4>
+                        <div class="grid grid-cols-2 gap-4">
+                            <?php foreach ($specDefs as $def): ?>
+                            <div>
+                                <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">
+                                    <?= Security::h($def['label']) ?>
+                                    <?php if ($def['unit']): ?><span class="text-on-surface-variant/60">(<?= Security::h($def['unit']) ?>)</span><?php endif; ?>
+                                </label>
+                                <?php if ($def['data_type'] === 'enum' && $def['options']): ?>
+                                    <select class="w-full border border-divider-gray rounded-lg p-3 focus:ring-2 focus:ring-deep-royal focus:outline-none" name="spec[<?= $def['id'] ?>]">
+                                        <option value="">—</option>
+                                        <?php foreach (explode(',', $def['options']) as $opt): $opt = trim($opt); ?>
+                                            <option value="<?= Security::h($opt) ?>"><?= Security::h($opt) ?></option>
+                                        <?php endforeach; ?>
+                                    </select>
+                                <?php elseif ($def['data_type'] === 'number'): ?>
+                                    <input class="w-full border border-divider-gray rounded-lg p-3 focus:ring-2 focus:ring-deep-royal focus:outline-none" name="spec[<?= $def['id'] ?>]" type="number" step="any" placeholder="<?= Security::h($def['unit'] ?: '') ?>">
+                                <?php else: ?>
+                                    <input class="w-full border border-divider-gray rounded-lg p-3 focus:ring-2 focus:ring-deep-royal focus:outline-none" name="spec[<?= $def['id'] ?>]">
+                                <?php endif; ?>
+                            </div>
+                            <?php endforeach; ?>
+                        </div>
+                    </section>
+                    <?php endif; ?>
+                    <section class="space-y-4">
+                        <h4 class="font-label-caps text-on-surface-variant border-b border-divider-gray pb-2" style="color: #444650;">Variants <span class="text-on-surface-variant/60 text-[10px]">(optional — for multi-option products)</span></h4>
+                        <div id="variantsContainer" class="space-y-2">
+                            <div class="text-sm text-on-surface-variant text-center py-4" id="variantsEmpty">No variants added.</div>
+                        </div>
+                        <button type="button" class="text-xs text-vibrant-amber font-bold flex items-center gap-1 hover:underline" onclick="addVariantRow()">
+                            <span class="material-symbols-outlined" style="font-size: 16px;">add</span> Add Variant
+                        </button>
+                    </section>
                     <section class="space-y-4">
                         <h4 class="font-label-caps text-on-surface-variant border-b border-divider-gray pb-2" style="color: #444650;">Product Image</h4>
                         <div class="border-2 border-dashed border-divider-gray rounded-xl p-8 text-center hover:border-deep-royal/30 transition-colors cursor-pointer group" onclick="document.getElementById('imageInput').click()">
@@ -373,6 +501,47 @@ function specsFromJson(jsonStr) {
     }
 }
 
+var variantsData = <?= json_encode($editVariants) ?>;
+
+function addVariantRow(data) {
+    data = data || {};
+    var container = document.getElementById('variantsContainer');
+    var empty = document.getElementById('variantsEmpty');
+    if (empty) empty.remove();
+    var i = container.querySelectorAll('.variant-row').length;
+    var row = document.createElement('div');
+    row.className = 'variant-row flex gap-2 items-center';
+    row.innerHTML =
+        '<input type="hidden" name="variant_id[]" value="' + (data.id || 0) + '">' +
+        '<input type="text" name="variant_label[]" placeholder="Label (e.g. 3 Ton)" value="' + (data.variant_label || '') + '" class="flex-1 border border-divider-gray rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-deep-royal focus:outline-none">' +
+        '<input type="text" name="variant_sku[]" placeholder="SKU suffix" value="' + (data.sku_suffix || '') + '" class="w-24 border border-divider-gray rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-deep-royal focus:outline-none">' +
+        '<input type="number" step="0.01" name="variant_price[]" placeholder="Price" value="' + (data.price || '') + '" class="w-24 border border-divider-gray rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-deep-royal focus:outline-none">' +
+        '<input type="number" name="variant_stock[]" placeholder="Stock" value="' + (data.stock || 0) + '" class="w-20 border border-divider-gray rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-deep-royal focus:outline-none">' +
+        '<button type="button" class="p-2 hover:bg-error/10 rounded-lg text-on-surface-variant hover:text-error" onclick="removeVariantRow(this)"><span class="material-symbols-outlined" style="font-size: 18px;">close</span></button>';
+    container.appendChild(row);
+}
+
+function removeVariantRow(btn) {
+    var row = btn.closest('.variant-row');
+    var hiddenId = row.querySelector('input[name="variant_id[]"]');
+    if (hiddenId && parseInt(hiddenId.value) > 0) {
+        var del = document.createElement('input');
+        del.type = 'hidden';
+        del.name = 'variant_delete[]';
+        del.value = hiddenId.value;
+        row.parentElement.appendChild(del);
+    }
+    row.remove();
+    var container = document.getElementById('variantsContainer');
+    if (container.querySelectorAll('.variant-row').length === 0) {
+        var empty = document.createElement('div');
+        empty.id = 'variantsEmpty';
+        empty.className = 'text-sm text-on-surface-variant text-center py-4';
+        empty.textContent = 'No variants added.';
+        container.appendChild(empty);
+    }
+}
+
 function toggleModal(id) {
     const modal = document.getElementById(id);
     const container = document.getElementById('modalContainer');
@@ -389,7 +558,7 @@ function toggleModal(id) {
     }
 }
 
-function openEdit(id, product) {
+function openEdit(id, product, specs, variants) {
     document.getElementById('formAction').value = 'update';
     document.getElementById('productId').value = id;
     document.getElementById('modalTitle').textContent = 'Edit Product';
@@ -405,6 +574,24 @@ function openEdit(id, product) {
     document.getElementById('inputMetaDesc').value = product.meta_description || '';
     document.getElementById('inputSpecs').value = product.specs || '';
     specsFromJson(product.specs || '');
+
+    if (specs) {
+        specs.forEach(function(s) {
+            var el = document.querySelector('select[name="spec[' + s.spec_definition_id + ']"], input[name="spec[' + s.spec_definition_id + ']"]');
+            if (el) el.value = s.value;
+        });
+    }
+
+    var vc = document.getElementById('variantsContainer');
+    vc.querySelectorAll('.variant-row').forEach(function(r) { r.remove(); });
+    var ve = document.getElementById('variantsEmpty');
+    if (ve) ve.remove();
+    if (variants && variants.length) {
+        variants.forEach(function(v) { addVariantRow(v); });
+    } else {
+        vc.innerHTML = '<div class="text-sm text-on-surface-variant text-center py-4" id="variantsEmpty">No variants added.</div>';
+    }
+
     toggleModal('productModal');
 }
 
@@ -417,9 +604,40 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+function doBulkAction() {
+    var checked = document.querySelectorAll('.product-checkbox:checked');
+    var action = document.getElementById('bulkSelect').value;
+    if (!action) { alert('Please select a bulk action.'); return; }
+    if (checked.length === 0) { alert('Please select products.'); return; }
+    if (action === 'delete' && !confirm('Move ' + checked.length + ' products to trash?')) return;
+    document.getElementById('bulkAction').value = action;
+    document.getElementById('bulkForm').submit();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    var selectAll = document.getElementById('selectAll');
+    if (selectAll) {
+        selectAll.addEventListener('change', function() {
+            document.querySelectorAll('.product-checkbox').forEach(function(cb) {
+                cb.checked = selectAll.checked;
+            });
+            updateBulkCount();
+        });
+    }
+    document.querySelectorAll('.product-checkbox').forEach(function(cb) {
+        cb.addEventListener('change', updateBulkCount);
+    });
+});
+
+function updateBulkCount() {
+    var count = document.querySelectorAll('.product-checkbox:checked').length;
+    var el = document.getElementById('bulkCount');
+    if (el) el.textContent = count + ' selected';
+}
+
 <?php if ($editProduct): ?>
 document.addEventListener('DOMContentLoaded', function() {
-    openEdit(<?= $editProduct['id'] ?>, <?= json_encode($editProduct) ?>);
+    openEdit(<?= $editProduct['id'] ?>, <?= json_encode($editProduct) ?>, <?= json_encode($editSpecs) ?>, <?= json_encode($editVariants) ?>);
 });
 <?php endif; ?>
 </script>

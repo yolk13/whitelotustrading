@@ -58,7 +58,7 @@ class Session
     public static function write(string $sessionId, string $data): bool
     {
         $exists = Database::exists('sessions', 'id', $sessionId);
-        $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+        $ip = Security::clientIp();
         $ua = $_SERVER['HTTP_USER_AGENT'] ?? '';
         $time = time();
 

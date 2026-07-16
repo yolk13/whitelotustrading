@@ -49,16 +49,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($action === 'create') {
                 $id = Post::create($data);
+                Audit::log('create', 'post', $id, json_encode(['data' => $data]));
                 $message = 'Post created successfully.';
                 $_POST = [];
             } else {
+                $old = Post::find((int)$_POST['id']);
                 if ($_POST['status'] === 'published') {
-                    $existing = Post::find((int)$_POST['id']);
-                    if ($existing && !$existing['published_at']) {
+                    if ($old && !$old['published_at']) {
                         $data['published_at'] = date('Y-m-d H:i:s');
                     }
                 }
                 Post::update((int)$_POST['id'], $data);
+                Audit::log('update', 'post', (int)$_POST['id'], Audit::diff($old ?? [], $data));
                 $message = 'Post updated successfully.';
             }
         } else {
@@ -69,8 +71,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'delete') {
         $id = (int)($_POST['id'] ?? 0);
         if ($id) {
+            $old = Post::find($id) ?: Post::findTrashed($id);
             Post::delete($id);
-            $message = 'Post deleted.';
+            Audit::log('delete', 'post', $id, $old ? json_encode(['title' => $old['title'] ?? '']) : null);
+            $message = 'Post trashed.';
         }
     }
     }

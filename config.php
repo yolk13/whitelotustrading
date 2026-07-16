@@ -25,6 +25,13 @@ define('BCRYPT_COST', 12);
 define('MAX_UPLOAD_SIZE', 2097152);
 define('ALLOWED_MIME_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
 
+define('INQUIRY_RATE_LIMIT_MAX', 3);
+define('INQUIRY_RATE_LIMIT_WINDOW_MINUTES', 30);
+define('LOGIN_IP_RATE_LIMIT_MAX', 10);
+define('LOGIN_IP_RATE_LIMIT_WINDOW_MINUTES', 15);
+define('SUBSCRIBE_RATE_LIMIT_MAX', 5);
+define('SUBSCRIBE_RATE_LIMIT_WINDOW_MINUTES', 60);
+
 error_reporting(E_ALL);
 ini_set('display_errors', '0');
 ini_set('log_errors', '1');

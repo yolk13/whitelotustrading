@@ -1,6 +1,35 @@
 <?php
 
 $pageTitle = 'Media Library';
+$message = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'upload') {
+    if (!Security::validateCsrf($_POST['csrf_token'] ?? null)) {
+        $message = 'Invalid security token.';
+    } elseif (!empty($_FILES['file']['name'][0])) {
+        $uploaded = 0;
+        $errors = [];
+        foreach ($_FILES['file']['tmp_name'] as $i => $tmpName) {
+            if ($_FILES['file']['error'][$i] !== UPLOAD_ERR_OK) {
+                $errors[] = $_FILES['file']['name'][$i] . ': upload error';
+                continue;
+            }
+            $filename = Security::saveUpload(['name' => $_FILES['file']['name'][$i], 'tmp_name' => $tmpName, 'error' => UPLOAD_ERR_OK, 'size' => $_FILES['file']['size'][$i]]);
+            if ($filename) {
+                $uploaded++;
+            } else {
+                $errors[] = $_FILES['file']['name'][$i] . ': rejected';
+            }
+        }
+        if ($uploaded) {
+            Audit::log('upload', 'media', 0, json_encode(['count' => $uploaded]));
+            $message = $uploaded . ' file' . ($uploaded !== 1 ? 's' : '') . ' uploaded.';
+        }
+        if ($errors) {
+            $GLOBALS['errors']['upload'] = implode(', ', $errors);
+        }
+    }
+}
 
 $files = [];
 $uploadDir = UPLOAD_PATH;
@@ -23,6 +52,30 @@ if (is_dir($uploadDir)) {
 
 require_once BASE_PATH . 'includes/admin-header.php';
 ?>
+
+<?php if ($message): ?>
+    <div class="bg-primary-fixed text-deep-royal px-6 py-3 rounded-lg font-body-md mb-6" style="background-color: #dbe1ff;"><?= Security::h($message) ?></div>
+<?php endif; ?>
+
+<?php if (!empty($GLOBALS['errors'])): ?>
+    <div class="bg-error-container text-error px-6 py-3 rounded-lg font-body-md mb-6" style="background-color: #ffdad6; color: #ba1a1a;">
+        <?php foreach ($GLOBALS['errors'] as $err): ?>
+            <p><?= Security::h($err) ?></p>
+        <?php endforeach; ?>
+    </div>
+<?php endif; ?>
+
+<div class="glass-card rounded-xl border border-on-surface/5 p-6 mb-6">
+    <form method="POST" enctype="multipart/form-data" class="flex items-end gap-4 flex-wrap">
+        <input type="hidden" name="csrf_token" value="<?= Security::generateCsrfToken() ?>">
+        <input type="hidden" name="action" value="upload">
+        <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-bold text-on-surface-variant uppercase mb-1">Upload Files</label>
+            <input type="file" name="file[]" multiple accept="image/jpeg,image/png,image/gif,image/webp,image/svg+xml,image/x-icon" class="w-full text-sm text-on-surface-variant file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-bold file:bg-deep-royal file:text-pure-white hover:file:brightness-110 transition-all">
+        </div>
+        <button type="submit" class="bg-deep-royal text-pure-white px-6 py-2.5 rounded-lg font-label-caps hover:brightness-110 transition-all shadow-sm">Upload</button>
+    </form>
+</div>
 
 <div class="flex justify-between items-end mb-6">
     <div>

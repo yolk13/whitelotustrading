@@ -8,5 +8,7 @@
 </div>
 </main>
 </div>
+<script src="/assets/js/autosave.js"></script>
+<script src="/assets/js/confirm-modal.js"></script>
 </body>
 </html>

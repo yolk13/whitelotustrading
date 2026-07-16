@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html class="scroll-smooth" lang="en">
+<html class="scroll-smooth" lang="<?= Translation::getLocale() ?>" dir="<?= Translation::dir() ?>">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -64,6 +64,16 @@ tailwind.config = {
 .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+[dir="rtl"] .space-x-8 > :not([hidden]) ~ :not([hidden]) { margin-right: 2rem; margin-left: 0; }
+[dir="rtl"] .md\:space-x-8 > :not([hidden]) ~ :not([hidden]) { margin-right: 2rem; margin-left: 0; }
+[dir="rtl"] .space-x-4 > :not([hidden]) ~ :not([hidden]) { margin-right: 1rem; margin-left: 0; }
+[dir="rtl"] .space-x-6 > :not([hidden]) ~ :not([hidden]) { margin-right: 1.5rem; margin-left: 0; }
+[dir="rtl"] .left-3 { right: 0.75rem; left: auto; }
+[dir="rtl"] .pl-10 { padding-right: 2.5rem; padding-left: 0; }
+[dir="rtl"] .mr-2 { margin-left: 0.5rem; margin-right: 0; }
+[dir="rtl"] .ml-2 { margin-right: 0.5rem; margin-left: 0; }
+[dir="rtl"] .text-left { text-align: right; }
+[dir="rtl"] .text-right { text-align: left; }
 </style>
 </head>
 <body class="bg-pure-white text-on-surface font-body-md overflow-x-hidden">
@@ -81,27 +91,31 @@ tailwind.config = {
             <span class="font-headline-md text-headline-md font-extrabold text-deep-royal tracking-tight">White Lotus Trading</span>
         </a>
         <nav class="hidden md:flex items-center space-x-8">
-            <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/">Home</a>
-            <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/products') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/products">Products</a>
-            <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/blog') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/blog">Blog</a>
-            <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/inquiry') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/inquiry">Inquiry</a>
-            <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/contact') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/contact">Contact</a>
+            <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/"><?= Translation::t('nav.home') ?></a>
+            <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/products') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/products"><?= Translation::t('nav.products') ?></a>
+            <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/blog') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/blog"><?= Translation::t('nav.blog') ?></a>
+            <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/inquiry') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/inquiry"><?= Translation::t('nav.inquiry') ?></a>
+            <a class="font-label-caps text-label-caps text-on-surface-variant font-medium hover:text-vibrant-amber transition-colors <?= isActive('/contact') ? 'text-deep-royal border-b-2 border-vibrant-amber pb-1' : '' ?>" href="/contact"><?= Translation::t('nav.contact') ?></a>
             <a href="/search" class="text-on-surface-variant hover:text-deep-royal transition-colors">
                 <span class="material-symbols-outlined">search</span>
             </a>
-            <a href="/inquiry" class="bg-deep-royal text-pure-white px-6 py-2 rounded-lg font-label-caps text-label-caps hover:bg-vibrant-amber hover:text-deep-royal transition-all active:scale-95">Get a Quote</a>
+            <a href="<?= Translation::langLink('/inquiry', Translation::getLocale() === 'ar' ? 'en' : 'ar') ?>" class="text-xs text-on-surface-variant hover:text-deep-royal transition-colors border border-divider-gray px-3 py-1 rounded-lg">
+                <?= Translation::getLocale() === 'ar' ? 'English' : 'العربية' ?>
+            </a>
+            <a href="/inquiry" class="bg-deep-royal text-pure-white px-6 py-2 rounded-lg font-label-caps text-label-caps hover:bg-vibrant-amber hover:text-deep-royal transition-all active:scale-95"><?= Translation::t('hero.wellness') ?></a>
         </nav>
         <button class="md:hidden text-deep-royal" onclick="document.getElementById('mobileNav').classList.toggle('hidden')">
             <span class="material-symbols-outlined">menu</span>
         </button>
     </div>
     <div id="mobileNav" class="hidden md:hidden bg-pure-white border-t border-on-surface/10 px-margin-mobile py-4 space-y-4">
-        <a class="block font-label-caps text-label-caps text-deep-royal" href="/">Home</a>
-        <a class="block font-label-caps text-label-caps text-on-surface-variant" href="/products">Products</a>
-        <a class="block font-label-caps text-label-caps text-on-surface-variant" href="/blog">Blog</a>
-        <a class="block font-label-caps text-label-caps text-on-surface-variant" href="/inquiry">Inquiry</a>
-        <a class="block font-label-caps text-label-caps text-on-surface-variant" href="/contact">Contact</a>
-        <a href="/inquiry" class="block bg-deep-royal text-pure-white px-6 py-2 rounded-lg font-label-caps text-center">Get a Quote</a>
+        <a class="block font-label-caps text-label-caps text-deep-royal" href="/"><?= Translation::t('nav.home') ?></a>
+        <a class="block font-label-caps text-label-caps text-on-surface-variant" href="/products"><?= Translation::t('nav.products') ?></a>
+        <a class="block font-label-caps text-label-caps text-on-surface-variant" href="/blog"><?= Translation::t('nav.blog') ?></a>
+        <a class="block font-label-caps text-label-caps text-on-surface-variant" href="/inquiry"><?= Translation::t('nav.inquiry') ?></a>
+        <a class="block font-label-caps text-label-caps text-on-surface-variant" href="/contact"><?= Translation::t('nav.contact') ?></a>
+        <a href="<?= Translation::langLink('/inquiry', Translation::getLocale() === 'ar' ? 'en' : 'ar') ?>" class="block text-sm text-on-surface-variant font-medium"><?= Translation::getLocale() === 'ar' ? 'English' : 'العربية' ?></a>
+        <a href="/inquiry" class="block bg-deep-royal text-pure-white px-6 py-2 rounded-lg font-label-caps text-center"><?= Translation::t('hero.wellness') ?></a>
     </div>
 </header>
 <main>

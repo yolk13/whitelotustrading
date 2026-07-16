@@ -1,5 +1,6 @@
 <?php
 
+Auth::requireRole('admin');
 $pageTitle = 'Home Page Settings';
 $message = '';
 
@@ -47,6 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
+        Audit::log('update', 'settings', 0, json_encode(['fields' => array_keys($_POST)]));
         $message = 'Settings saved successfully.';
     }
 }

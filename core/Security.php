@@ -129,6 +129,57 @@ class Security
         return $filename;
     }
 
+    public static function clientIp(): string
+    {
+        if (defined('TRUSTED_PROXIES') && TRUSTED_PROXIES) {
+            $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
+            if ($forwarded) {
+                $ips = explode(',', $forwarded);
+                return trim($ips[0]);
+            }
+            $realIp = $_SERVER['HTTP_X_REAL_IP'] ?? '';
+            if ($realIp) {
+                return $realIp;
+            }
+        }
+        return $_SERVER['REMOTE_ADDR'] ?? '127.0.0.1';
+    }
+
+    public static function checkRateLimit(string $action, int $maxAttempts, int $windowMinutes): bool
+    {
+        $ip = self::clientIp();
+        $row = Database::fetch(
+            "SELECT count, expires_at FROM rate_limits WHERE ip = ? AND action = ?",
+            [$ip, $action]
+        );
+        if (!$row) return true;
+        if (strtotime($row['expires_at']) < time()) return true;
+        return (int)$row['count'] < $maxAttempts;
+    }
+
+    public static function hitRateLimit(string $action, int $windowMinutes): void
+    {
+        $ip = self::clientIp();
+        $expires = date('Y-m-d H:i:s', time() + $windowMinutes * 60);
+        $existing = Database::fetch(
+            "SELECT count FROM rate_limits WHERE ip = ? AND action = ?",
+            [$ip, $action]
+        );
+        if ($existing) {
+            Database::query(
+                "UPDATE rate_limits SET count = count + 1, expires_at = ? WHERE ip = ? AND action = ?",
+                [$expires, $ip, $action]
+            );
+        } else {
+            Database::insert('rate_limits', [
+                'ip' => $ip,
+                'action' => $action,
+                'count' => 1,
+                'expires_at' => $expires,
+            ]);
+        }
+    }
+
     public static function generateSlug(string $string): string
     {
         $string = mb_strtolower($string, 'UTF-8');

@@ -13,14 +13,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $id = (int)($_POST['id'] ?? 0);
         $reply = Security::sanitizeRich($_POST['reply_message'] ?? '');
         if ($id && $reply) {
-            Database::query(
-                "UPDATE inquiries SET status = 'replied', admin_notes = ? WHERE id = ?",
-                [$reply, $id]
-            );
+            Database::insert('inquiry_replies', [
+                'inquiry_id' => $id,
+                'admin_user_id' => Auth::id(),
+                'message' => $reply,
+            ]);
+            Database::query("UPDATE inquiries SET status = 'replied' WHERE id = ?", [$id]);
             $inquiry = Inquiry::find($id);
             if ($inquiry) {
                 Mail::sendInquiryReply($inquiry, $reply);
             }
+            Audit::log('reply', 'inquiry', $id, json_encode(['message_preview' => mb_substr($reply, 0, 100)]));
             $message = 'Reply sent.';
         }
     }
@@ -72,7 +75,21 @@ require_once BASE_PATH . 'includes/admin-header.php';
             <div class="p-8 text-center text-on-surface-variant font-body-md">No inquiries found.</div>
         <?php else: ?>
             <?php foreach ($inquiries['items'] as $inq): ?>
-            <?php $inq['csrf_token'] = Security::generateCsrfToken(); ?>
+            <?php
+            $inq['csrf_token'] = Security::generateCsrfToken();
+            $inq['replies'] = Database::fetchAll(
+                "SELECT r.*, u.display_name AS admin_name FROM inquiry_replies r LEFT JOIN users u ON r.admin_user_id = u.id WHERE r.inquiry_id = ? ORDER BY r.created_at ASC",
+                [$inq['id']]
+            );
+            if (!empty($inq['customer_id'])) {
+                $inq['previous_inquiries'] = Database::fetchAll(
+                    "SELECT id, subject, message, status, created_at FROM inquiries WHERE customer_id = ? AND id != ? ORDER BY created_at DESC LIMIT 5",
+                    [$inq['customer_id'], $inq['id']]
+                );
+            } else {
+                $inq['previous_inquiries'] = [];
+            }
+            ?>
             <div class="border-b border-on-surface/5 p-5 cursor-pointer hover:bg-surface-container-low transition-all group <?= !$inq['is_read'] ? 'bg-primary-container/5' : '' ?>" onclick="openInquiry(<?= $inq['id'] ?>, <?= Security::h(json_encode($inq)) ?>)">
                 <div class="flex justify-between items-start mb-1">
                     <span class="font-headline-sm text-body-md font-bold text-deep-royal"><?= Security::h($inq['name']) ?></span>
@@ -169,7 +186,25 @@ function openInquiry(id, inq) {
     document.getElementById('detail-phone').textContent = inq.phone ? 'Phone: ' + inq.phone : '';
     document.getElementById('detail-company').textContent = inq.company ? 'Company: ' + inq.company : '';
     document.getElementById('detail-date').textContent = inq.created_at;
-    document.getElementById('detail-message').innerHTML = '<div class="p-6 bg-surface-container-low rounded-xl"><p class="text-body-md text-on-surface leading-relaxed">' + inq.message.replace(/\n/g, '<br>') + '</p></div>';
+    var msgHtml = '<div class="p-6 bg-surface-container-low rounded-xl"><p class="text-body-md text-on-surface leading-relaxed">' + inq.message.replace(/\n/g, '<br>') + '</p></div>';
+
+    if (inq.replies && inq.replies.length > 0) {
+        msgHtml += '<div class="mt-6"><h4 class="font-label-caps text-on-surface-variant mb-3">Replies</h4>';
+        inq.replies.forEach(function(r) {
+            msgHtml += '<div class="p-4 bg-deep-royal/5 rounded-xl mb-2 border-l-4 border-deep-royal"><p class="text-sm text-on-surface">' + r.message.replace(/\n/g, '<br>') + '</p><p class="text-[10px] text-on-surface-variant mt-2">' + r.created_at + ' by ' + r.admin_name + '</p></div>';
+        });
+        msgHtml += '</div>';
+    }
+
+    if (inq.previous_inquiries && inq.previous_inquiries.length > 0) {
+        msgHtml += '<div class="mt-6"><h4 class="font-label-caps text-on-surface-variant mb-3">Previous Inquiries</h4>';
+        inq.previous_inquiries.forEach(function(pi) {
+            msgHtml += '<a href="#" onclick="openInquiry(' + pi.id + ', ' + JSON.stringify(pi) + '); return false;" class="block p-3 bg-surface-container-low rounded-xl mb-2 hover:bg-surface-container-high transition-colors"><p class="text-sm font-bold text-deep-royal">' + pi.subject + '</p><p class="text-[10px] text-on-surface-variant">' + pi.created_at + ' — ' + pi.status + '</p></a>';
+        });
+        msgHtml += '</div>';
+    }
+
+    document.getElementById('detail-message').innerHTML = msgHtml;
     document.getElementById('replyId').value = id;
     toggleModal('inquiryModal');
 }

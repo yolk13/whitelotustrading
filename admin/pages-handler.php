@@ -18,13 +18,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'slug' => ['required', 'min:2', 'max:200'],
             'status' => ['required', 'in:draft,published'],
         ])) {
-            Page::update($id, [
+            $data = [
                 'title' => Security::sanitize($_POST['title']),
                 'slug' => Security::sanitize($_POST['slug']),
                 'content' => Security::sanitizeRich($_POST['content'] ?? ''),
                 'meta_description' => Security::sanitize($_POST['meta_description'] ?? ''),
                 'status' => $_POST['status'],
-            ]);
+            ];
+            $old = Page::find($id);
+            Page::update($id, $data);
+            Audit::log('update', 'page', $id, Audit::diff($old ?? [], $data));
             $message = 'Page updated successfully.';
         } else {
             $GLOBALS['errors'] = $validator->errors();

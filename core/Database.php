@@ -139,6 +139,38 @@ class Database
                 updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
             )
         ');
+        self::$instance->exec('
+            CREATE TABLE IF NOT EXISTS rate_limits (
+                ip TEXT NOT NULL,
+                action TEXT NOT NULL,
+                count INTEGER DEFAULT 1,
+                expires_at DATETIME NOT NULL,
+                PRIMARY KEY (ip, action)
+            )
+        ');
+        try {
+            self::$instance->exec("DELETE FROM rate_limits WHERE expires_at < datetime('now')");
+        } catch (PDOException $e) {
+        }
+        self::$instance->exec('
+            CREATE TABLE IF NOT EXISTS audit_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                admin_user_id INTEGER,
+                action TEXT NOT NULL,
+                entity_type TEXT NOT NULL,
+                entity_id INTEGER,
+                changes TEXT,
+                ip_address TEXT,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (admin_user_id) REFERENCES users(id)
+            )
+        ');
+        try {
+            self::$instance->exec("CREATE INDEX IF NOT EXISTS idx_audit_log_entity ON audit_log(entity_type, entity_id)");
+            self::$instance->exec("CREATE INDEX IF NOT EXISTS idx_audit_log_created ON audit_log(created_at)");
+            self::$instance->exec("CREATE INDEX IF NOT EXISTS idx_audit_log_admin ON audit_log(admin_user_id)");
+        } catch (PDOException $e) {
+        }
 
         $existingAdmin = self::fetch("SELECT id FROM users WHERE username = 'admin'");
         if (!$existingAdmin) {
@@ -198,6 +230,85 @@ class Database
 
         try {
             self::$instance->exec("ALTER TABLE products ADD COLUMN meta_description TEXT DEFAULT ''");
+        } catch (PDOException $e) {
+        }
+        try {
+            self::$instance->exec("ALTER TABLE products ADD COLUMN deleted_at DATETIME DEFAULT NULL");
+        } catch (PDOException $e) {
+        }
+        try {
+            self::$instance->exec("ALTER TABLE products ADD COLUMN external_id VARCHAR(100) DEFAULT ''");
+        } catch (PDOException $e) {
+        }
+        self::$instance->exec('
+            CREATE TABLE IF NOT EXISTS customers (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                email TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL,
+                phone TEXT DEFAULT \'\',
+                company TEXT DEFAULT \'\',
+                notes TEXT DEFAULT \'\',
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ');
+        try {
+            self::$instance->exec("ALTER TABLE inquiries ADD COLUMN customer_id INTEGER DEFAULT NULL");
+        } catch (PDOException $e) {
+        }
+        self::$instance->exec('
+            CREATE TABLE IF NOT EXISTS inquiry_replies (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                inquiry_id INTEGER NOT NULL,
+                admin_user_id INTEGER,
+                message TEXT NOT NULL,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (inquiry_id) REFERENCES inquiries(id) ON DELETE CASCADE,
+                FOREIGN KEY (admin_user_id) REFERENCES users(id)
+            )
+        ');
+        self::$instance->exec('
+            CREATE TABLE IF NOT EXISTS spec_definitions (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                key TEXT NOT NULL UNIQUE,
+                label TEXT NOT NULL,
+                data_type TEXT NOT NULL DEFAULT \'text\',
+                unit TEXT DEFAULT \'\',
+                options TEXT,
+                sort_order INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            )
+        ');
+        self::$instance->exec('
+            CREATE TABLE IF NOT EXISTS product_specs (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id INTEGER NOT NULL,
+                spec_definition_id INTEGER NOT NULL,
+                value TEXT DEFAULT \'\',
+                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+                FOREIGN KEY (spec_definition_id) REFERENCES spec_definitions(id) ON DELETE CASCADE,
+                UNIQUE(product_id, spec_definition_id)
+            )
+        ');
+        self::$instance->exec('
+            CREATE TABLE IF NOT EXISTS product_variants (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                product_id INTEGER NOT NULL,
+                variant_label TEXT NOT NULL,
+                sku_suffix TEXT DEFAULT \'\',
+                price DECIMAL(10,2) DEFAULT NULL,
+                stock INTEGER DEFAULT 0,
+                sort_order INTEGER DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE
+            )
+        ');
+        try {
+            self::$instance->exec("ALTER TABLE posts ADD COLUMN deleted_at DATETIME DEFAULT NULL");
+        } catch (PDOException $e) {
+        }
+        try {
+            self::$instance->exec("ALTER TABLE pages ADD COLUMN deleted_at DATETIME DEFAULT NULL");
         } catch (PDOException $e) {
         }
 
@@ -268,6 +379,30 @@ class Database
     {
         self::query("DELETE FROM {$table} WHERE {$where}", $params);
         return self::query("SELECT changes()")->fetchColumn();
+    }
+
+    public static function upsert(string $table, array $data, array $uniqueKeys): void
+    {
+        $whereParts = [];
+        $whereParams = [];
+        foreach ($uniqueKeys as $key) {
+            $whereParts[] = "{$key} = ?";
+            $whereParams[] = $data[$key];
+        }
+        $where = implode(' AND ', $whereParts);
+
+        $existing = self::fetch("SELECT 1 FROM {$table} WHERE {$where} LIMIT 1", $whereParams);
+        if ($existing) {
+            $updateData = $data;
+            foreach ($uniqueKeys as $key) {
+                unset($updateData[$key]);
+            }
+            if (!empty($updateData)) {
+                self::update($table, $updateData, $where, $whereParams);
+            }
+        } else {
+            self::insert($table, $data);
+        }
     }
 
     public static function exists(string $table, string $column, mixed $value): bool
