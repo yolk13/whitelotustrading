@@ -2,7 +2,7 @@
 
 class Inquiry extends Model
 {
-    protected static string $table = 'inquiries';
+    public static string $table = 'inquiries';
 
     public static function recent(int $limit = 5): array
     {
